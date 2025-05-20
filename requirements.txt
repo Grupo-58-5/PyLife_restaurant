@@ -1,0 +1,4 @@
+fastapi[standart]
+pytest
+httpx
+loguru
