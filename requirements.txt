@@ -1,4 +1,11 @@
-fastapi[standart]
+fastapi[standard]
 pytest
 httpx
 loguru
+
+sqlmodel
+
+uvicorn 
+sqlalchemy 
+psycopg2-binary 
+python-dotenv
