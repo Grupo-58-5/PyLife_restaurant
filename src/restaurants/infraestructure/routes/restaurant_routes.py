@@ -1,9 +1,9 @@
 from datetime import time
 from fastapi import APIRouter, Depends, FastAPI, HTTPException, Query
-from src.common.db.database import get_db
+from src.shared.db.database import get_db
 
 from typing import Annotated
-from sqlmodel import Field, Session, SQLModel, create_engine, select
+from sqlmodel import Session, select
 
 router = APIRouter(prefix="/restaurants", tags=["Restaurants"])
 

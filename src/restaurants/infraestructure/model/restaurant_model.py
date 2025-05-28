@@ -1,15 +1,13 @@
 
 
 from datetime import time
-from sqlmodel import Field, SQLModel
-from src.common.db.database import Base
+from sqlmodel import SQLModel, Field
 
-class RestaurantModel(Base):
+class RestaurantModel(SQLModel, table=True):
 
-    __tablename__ = "restaurants"
-
-    id: int | None = Field(default=None, primary_key=True)
-    name: str = Field(index=True)
-    location: str
-    opening_time: time
-    closing_time: time
+    __tablename__ = "restaurantS"
+    id: int | None = Field(primary_key=True, index=True)
+    name: str = Field(index=True, nullable=False)
+    location: str = Field(index=True, nullable=False)
+    opening_time: time = Field(nullable=False)
+    closing_time: time = Field(nullable=False)
