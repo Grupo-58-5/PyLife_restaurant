@@ -5,7 +5,7 @@ from sqlmodel import SQLModel, Field
 
 class RestaurantModel(SQLModel, table=True):
 
-    __tablename__ = "restaurantS"
+    __tablename__ = "restaurants"
     id: int | None = Field(primary_key=True, index=True)
     name: str = Field(index=True, nullable=False)
     location: str = Field(index=True, nullable=False)

@@ -36,5 +36,5 @@ def get_app() -> FastAPI:
 app = get_app()
 
 @app.get("/")
-async def root():
+def root():
     return {"message": "Aplicación funcionando"}
