@@ -6,9 +6,9 @@ from src.restaurants.infraestructure.routes.restaurant_routes import router as r
 
 async def lifespan(_: FastAPI):
     try:
-        create_tables()
+        await create_tables()
         yield
-    except Exception as e:
+    except RuntimeError as e:
         print(e)
 
 

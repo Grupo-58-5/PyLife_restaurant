@@ -2,7 +2,7 @@
 from typing import Final
 from sqlmodel import SQLModel, create_engine, Session
 from sqlmodel.orm.session import Session
-from src.shared.infraestructure.settings import settings
+from src.shared.config.settings import settings
 
 DATABASE_URL: Final = f"postgresql://{settings.DB_USERNAME}:{settings.DB_PASSWORD}@{settings.DB_HOST}:{settings.DB_PORT}/{settings.DB_NAME}"
 engine = create_engine(DATABASE_URL,
