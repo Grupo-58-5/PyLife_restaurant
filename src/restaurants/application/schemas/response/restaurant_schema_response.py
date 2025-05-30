@@ -14,9 +14,9 @@ class BaseRestaurantResponse(BaseModel):
     """
     id: UUID
     name: str
-    location: str
-    opening_time: time
-    closing_time: time
+    address: str
+    opening_hour: time
+    closing_hour: time
 
     class Config:
         orm_mode = True

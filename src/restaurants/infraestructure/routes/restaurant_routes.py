@@ -1,6 +1,9 @@
 from uuid import uuid4
-from fastapi import APIRouter, Depends, status
-from sqlmodel import Session, select
+from fastapi import APIRouter, Depends, HTTPException, status
+from sqlmodel import Session
+from src.restaurants.application.services.create_restaurant_application_service import CreateRestaurantApplicationService
+from src.restaurants.application.services.get_all_restaurant_application_sevice import GetAllRestaurantApplicationService
+from src.restaurants.infraestructure.repository.restaurant_repository_impl import RestaurantRepositoryImpl
 from src.restaurants.application.schemas.entry.resaurant_schema_entry import CreateRestaurantSchema
 from src.restaurants.infraestructure.model.restaurant_model import RestaurantModel
 from src.restaurants.application.schemas.response.restaurant_schema_response import BaseRestaurantResponse
@@ -10,34 +13,28 @@ from src.shared.db.database import get_session
 
 router = APIRouter(prefix="/restaurants", tags=["Restaurants"])
 
+async def get_repository(session: Session = Depends(get_session)) -> RestaurantRepositoryImpl:
+    """Get an instance of the RestaurantRepositoryImpl. """
+    return RestaurantRepositoryImpl(db=session)
 
-@router.get("/", response_model=list[BaseRestaurantResponse])
-def get_restaurants(session : Session = Depends(get_session)):
-    statement = select(RestaurantModel)
-    results = session.exec(statement)
-    restaurants =  results.all()
-    return [BaseRestaurantResponse(**r.dict()) for r in restaurants]
+@router.get("/", response_model=list[BaseRestaurantResponse], status_code=status.HTTP_200_OK)
+async def get_restaurants(repo : RestaurantRepositoryImpl = Depends(get_repository)):
+    try:
+        service = GetAllRestaurantApplicationService(repo)
+        res= await service.execute()
+        return res
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e)) from e
 
 @router.post("/", response_model=BaseRestaurantResponse, status_code=status.HTTP_201_CREATED)
-def create_restaurant(restaurant: CreateRestaurantSchema, session: Session = Depends(get_session)):
-    restaurant_id = uuid4()
-    restaurant_model = RestaurantModel(
-        id=restaurant_id,
-        name=restaurant.name,
-        location=restaurant.location,
-        opening_time=restaurant.opening_time,
-        closing_time=restaurant.closing_time
-    )
-    session.add(restaurant_model)
-    session.commit()
-    session.refresh(restaurant_model)
-
-    restaurant_response = BaseRestaurantResponse(
-        id=restaurant_model.id,
-        name=restaurant_model.name,
-        location=restaurant_model.location,
-        opening_time=restaurant_model.opening_time,
-        closing_time=restaurant_model.closing_time
-    )
-    # Refresh the instance to get the updated state from the database
-    return restaurant_response
+async def create_restaurant(restaurant: CreateRestaurantSchema, repo: RestaurantRepositoryImpl = Depends(get_repository)):
+    """
+    Create a new restaurant endpoint.
+    """
+    try:
+        service = CreateRestaurantApplicationService(repo)
+        res = await service.execute(restaurant)
+        return res
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e)) from e
+    
