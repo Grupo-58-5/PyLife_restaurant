@@ -14,7 +14,8 @@ class RestaurantMapper():
             name = restaurant_model.name,
             address = restaurant_model.location,
             opening_hour = restaurant_model.opening_time,
-            closing_hour = restaurant_model.closing_time
+            closing_hour = restaurant_model.closing_time,
+            tables=[]
         ) 
 
     @staticmethod
@@ -25,4 +26,5 @@ class RestaurantMapper():
             location = data.get_address(),
             opening_time = data.get_opening(),
             closing_time = data.get_closing(),
+            tables = []
         )    

@@ -2,9 +2,11 @@
 
 
 from datetime import time
+from typing import List
 from uuid import UUID
 
 from pydantic import BaseModel
+from src.restaurants.application.schemas.response.table_restaurant_response import TableRestaurantResponse
 
 
 class BaseRestaurantResponse(BaseModel):
@@ -18,5 +20,6 @@ class BaseRestaurantResponse(BaseModel):
     opening_hour: time
     closing_hour: time
 
-    class Config:
-        orm_mode = True
+
+class RestaurantDetailResponse(BaseRestaurantResponse):
+    tables: List[TableRestaurantResponse]
