@@ -5,7 +5,7 @@ from src.shared.config.settings import settings
 
 DATABASE_URL: Final = f"postgresql://{settings.DB_USERNAME}:{settings.DB_PASSWORD}@{settings.DB_HOST}:{settings.DB_PORT}/{settings.DB_NAME}"
 engine = create_engine(DATABASE_URL,
-    echo=False,
+    echo=True,
     pool_size=5,
     max_overflow=10,
     pool_timeout=30,

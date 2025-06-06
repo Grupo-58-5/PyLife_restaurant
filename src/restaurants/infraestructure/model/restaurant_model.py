@@ -1,12 +1,12 @@
-
-
 from datetime import time
 from typing import List, TYPE_CHECKING
 from uuid import UUID, uuid4
 from sqlmodel import SQLModel, Field, Relationship
 
 if TYPE_CHECKING:
+    # Referencias de tipo para evitar ciclos
     from .table_model import TableModel
+
 
 class RestaurantModel(SQLModel, table=True):
     """Model representing a restaurant in the database."""
