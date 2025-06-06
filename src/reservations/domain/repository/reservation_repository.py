@@ -1,13 +1,14 @@
 
 from abc import ABC, abstractmethod
+from typing import List
 from uuid import UUID
 
-from PyLife_restaurant.src.reservations.domain.reservation import Reservation
+from src.reservations.domain.reservation import Reservation
 
 class IReservationRepository(ABC):
 
     @abstractmethod
-    def get_all_reservations(self) -> list[Reservation]:
+    def get_all_restaurant_reservations(self, restaurant_id: UUID) -> List[Reservation]:
         pass
 
     @abstractmethod
@@ -15,11 +16,11 @@ class IReservationRepository(ABC):
         pass
 
     @abstractmethod
-    def create_reservation(self, reservation: None) -> Reservation:
+    def create_reservation(self, reservation: Reservation) -> Reservation:
         pass
 
     @abstractmethod
-    def update_reservation(self, reservation_id: UUID, reservation: None) -> Reservation:
+    def update_reservation(self, reservation_id: UUID, reservation: Reservation) -> Reservation:
         pass
     
 

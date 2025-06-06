@@ -1,35 +1,24 @@
-from dataclasses import dataclass
-from datetime import datetime
-from enum import Enum
 
-from dataclasses import dataclass
-from datetime import datetime
-from enum import Enum
+from uuid import UUID
 
-class ReservationStatus(Enum):
-    PENDING = "pending"
-    CONFIRMED = "confirmed"
-    CANCELED = "canceled"
-    COMPLETED = "completed"
+from src.reservations.domain.vo.reservation_schedule_vo import ReservationSchedule
+from src.reservations.domain.vo.reservation_status_vo import ReservationStatus
 
-@dataclass
+
 class Reservation:
-    id: int
-    client_id: int
-    restaurant_id: int
-    table_id: int  
-    start_time: datetime
-    finish_time: datetime
-    status: ReservationStatus = ReservationStatus.PENDING
 
-    def validate_reservation(self):
-        """Validaciones antes de confirmar una reserva."""
-        if self.start_time >= self.finish_time:
-            raise ValueError("Finish time must be later than start time.")
-        
-        duration = (self.finish_time - self.start_time).total_seconds() / 3600
-        if duration > 4:
-            raise ValueError("Maximum reservation duration is 4 hours.")
-        
-        if self.table_id is None:
-            raise ValueError("A table must be selected for the reservation.")
+    def __init__(self, id: UUID, client_id: UUID, restaurant_id: UUID, table_restaurant_id: UUID, status: ReservationStatus, reservation_schedule: ReservationSchedule):
+        '''Use the create method insted of this'''
+        id = id,
+        client_id = client_id,
+        restaurant_id = restaurant_id,
+        table_restaurant_id = table_restaurant_id,
+        status = status,
+        schedule = reservation_schedule
+
+    @classmethod
+    def create(cls,  id: UUID, client_id: UUID, restaurant_id: UUID, table_restaurant_id: UUID, status: ReservationStatus, reservation_schedule: ReservationSchedule):
+        """Factory method to create a Reservation instance."""
+        if not all([id, client_id, restaurant_id, table_restaurant_id, status, reservation_schedule]):
+            raise ValueError("All parameters are required to create a Reservation.")
+        return cls(id, client_id, restaurant_id, table_restaurant_id, status, reservation_schedule)

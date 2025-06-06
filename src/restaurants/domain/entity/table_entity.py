@@ -25,13 +25,4 @@ class TableEntity:
     
     def get_location(self) -> Optional[str]:
         return self.location
-    
-    # def filter_by_seats(tables: List[TableEntity], min_seats: int) -> List[TableEntity]:
-    #     return [table for table in tables if table.get_seats() >= min_seats]
-
-    # def filter_by_location(tables: List[TableEntity], location: str) -> List[TableEntity]:
-    #     return [table for table in tables if table.get_location() == location]
-
-    # def filter_by_seats_and_location(tables: List[TableEntity], min_seats: int, location: str) -> List[TableEntity]:
-    #     return [table for table in tables if table.get_seats() >= min_seats and table.get_location() == location]
 
