@@ -3,13 +3,19 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from src.shared.db.init_db import create_tables
 from src.restaurants.infraestructure.routes.restaurant_routes import router as restaurant_router
+from src.auth.infraestructure.routes.auth_routes import router as auth_router
+from src.auth.infraestructure.routes.user_routes import router as user_router
+from contextlib import asynccontextmanager
 
+@asynccontextmanager
 async def lifespan(_: FastAPI):
     try:
         await create_tables()
         yield
     except RuntimeError as e:
         print(e)
+
+app = FastAPI(lifespan=lifespan)
 
 
 def get_app() -> FastAPI:
@@ -31,6 +37,8 @@ def get_app() -> FastAPI:
 
     
     app.include_router(restaurant_router)
+    app.include_router(auth_router)
+    app.include_router(user_router)
     return app
 
 app = get_app()
