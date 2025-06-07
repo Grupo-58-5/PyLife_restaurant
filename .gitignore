@@ -1,7 +1,7 @@
 /.history
 /.venv
 
-/postgres
+/postgres_data
 
 __pycache__/
 *.py[cod]

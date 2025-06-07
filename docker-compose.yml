@@ -12,12 +12,56 @@ services:
     container_name: python_database
     networks:
       - restaurant-network
-    # volumes:
-    #   - /postgres_data:/var/lib/postgresql/data
+    volumes:
+      - ./postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+  
+  pgadmin4:
+    image: dpage/pgadmin4
+    restart: always
+    environment:
+      PGADMIN_DEFAULT_EMAIL: 'admin@gmail.com'
+      PGADMIN_DEFAULT_PASSWORD: 'admin'
+    ports:
+      - "80:80"
+    depends_on:
+      - db_python
+    networks:
+      - restaurant-network
+
+  web:
+    build: .
+    command: uvicorn src.main:app --reload --workers 1 --host 0.0.0.0 --port 8000
+    restart: always
+    container_name: Pylife_backend
+    volumes:
+      - ./project:/usr/src/app
+    ports:
+      - ${PORT}:8000
+    environment:
+      - SECRET_KEY=${SECRET_KEY}
+      - ALGORITHM=${ALGORITHM}
+      - ACCESS_TOKEN_EXPIRE_MINUTES=${ACCESS_TOKEN_EXPIRE_MINUTES}
+      - DB_NAME=${DB_NAME}
+      - DB_USERNAME=${DB_USERNAME}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DB_HOST=${DB_HOST}
+      - DB_PORT=${DB_PORT}
+    env_file:
+      - ".env"
+    depends_on:
+      db_pythondb:
+        condition: service_healthy
+    networks:
+      - restaurant-network
 
 networks:
   restaurant-network:
     driver: bridge
-    
+
 volumes:
   postgres_data:
