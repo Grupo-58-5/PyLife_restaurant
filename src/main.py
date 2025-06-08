@@ -3,6 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from src.shared.db.init_db import create_tables
 from src.restaurants.infraestructure.routes.restaurant_routes import router as restaurant_router
+from src.restaurants.infraestructure.routes.menu_routes import router as menu_router
 
 async def lifespan(_: FastAPI):
     try:
@@ -29,8 +30,9 @@ def get_app() -> FastAPI:
         allow_headers=["*"]
     )
 
-    
     app.include_router(restaurant_router)
+    app.include_router(menu_router)
+
     return app
 
 app = get_app()

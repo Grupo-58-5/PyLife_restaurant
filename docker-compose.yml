@@ -1,5 +1,5 @@
 services:
-  
+
   db_python:
     image: postgres:15
     restart: always
@@ -12,12 +12,25 @@ services:
     container_name: python_database
     networks:
       - restaurant-network
-    # volumes:
-    #   - /postgres_data:/var/lib/postgresql/data
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  pgadmin:
+    image: dpage/pgadmin4:6.17
+    restart: always
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@admin.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+    ports:
+      - "5050:80"
+    depends_on:
+      - db_python
+    networks:
+      - restaurant-network
 
 networks:
   restaurant-network:
     driver: bridge
-    
+
 volumes:
   postgres_data:

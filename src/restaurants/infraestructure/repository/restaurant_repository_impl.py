@@ -1,6 +1,7 @@
 
 
 
+from typing import Optional
 from sqlmodel import Session, select
 from src.restaurants.domain.repository.i_restaurant_repository import IRestaurantRepository
 from src.restaurants.domain.restaurant import Restaurant
@@ -14,8 +15,10 @@ class RestaurantRepositoryImpl(IRestaurantRepository):
         super().__init__()
         self.db = db
 
-    async def get_restaurant_by_id(self, restaurant_id: str) -> Restaurant:
-        pass
+    async def get_restaurant_by_id(self, restaurant_id: str) -> Optional[Restaurant]:
+        statement = select(RestaurantModel).where(RestaurantModel.id == restaurant_id)
+        result = self.db.exec(statement)
+        return result.first()
 
     async def get_all_restaurants(self) -> list[Restaurant]:
         statement = select(RestaurantModel)

@@ -16,5 +16,5 @@ class IApplicationService(ABC, Generic[TService, TResponse]):
         super().__init__()
 
     @abstractmethod
-    def execute(self, data: TService) -> TResponse:
+    async def execute(self, data: TService) -> TResponse:
         pass

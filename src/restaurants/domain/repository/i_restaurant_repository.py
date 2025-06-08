@@ -10,15 +10,15 @@ from src.restaurants.infraestructure.model.restaurant_model import RestaurantMod
 class IRestaurantRepository(ABC):
 
     @abstractmethod
-    def get_all_restaurants(self) -> list[Restaurant]:
+    async def get_all_restaurants(self) -> list[Restaurant]:
         pass
 
     @abstractmethod
-    def get_restaurant_by_id(self, restaurant_id: UUID) -> Restaurant:
+    async def get_restaurant_by_id(self, restaurant_id: UUID) -> Restaurant:
         pass
 
     @abstractmethod
-    def create_restaurant(self, restaurant: CreateRestaurantSchema) -> Restaurant:
+    async def create_restaurant(self, restaurant: CreateRestaurantSchema) -> Restaurant:
         pass
 
     @abstractmethod
