@@ -18,3 +18,11 @@ class MenuItemResponse(BaseModel):
     restaurant_id: UUID
     restaurant_name: str
     item: MenuItem
+
+
+class MenuItemBase(BaseModel):
+    """Schema for the response of a menu item."""
+    id: UUID
+    name: str
+    description: str
+    category: str

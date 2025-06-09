@@ -1,16 +1,21 @@
 
 
 from abc import ABC, abstractmethod
+from typing import List
 from uuid import UUID
 
 from src.restaurants.application.schemas.entry.resaurant_schema_entry import CreateRestaurantSchema
 from src.restaurants.domain.restaurant import Restaurant
-from src.restaurants.infraestructure.model.restaurant_model import RestaurantModel
 
 class IRestaurantRepository(ABC):
 
     @abstractmethod
-    async def get_all_restaurants(self) -> list[Restaurant]:
+    async def get_all_restaurants(self) -> List[Restaurant]:
+        pass
+
+    @abstractmethod
+    async def get_restaurant_by_name(self, name: str) -> List[Restaurant]:
+        """Retrieve restaurants by name."""
         pass
 
     @abstractmethod
@@ -18,11 +23,11 @@ class IRestaurantRepository(ABC):
         pass
 
     @abstractmethod
-    async def create_restaurant(self, restaurant: CreateRestaurantSchema) -> Restaurant:
+    async def create_restaurant(self, restaurant: Restaurant) -> Restaurant:
         pass
 
     @abstractmethod
-    def update_restaurant(self, restaurant_id: UUID, restaurant: CreateRestaurantSchema) -> Restaurant:
+    def update_restaurant(self, restaurant_id: UUID, restaurant: Restaurant) -> Restaurant:
         pass
 
     @abstractmethod

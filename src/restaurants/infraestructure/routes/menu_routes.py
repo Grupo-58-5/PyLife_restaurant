@@ -1,23 +1,16 @@
 
 
 
-
-
-
-
-
-
-
 from fastapi import APIRouter
 from uuid import uuid4
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlmodel import Session
 from src.restaurants.application.schemas.entry.create_menu_item_schema import CreateMenuItemSchema
 from src.restaurants.application.schemas.entry.get_menu_entry_schema import GetMenuEntrySchema
-from src.restaurants.application.services.get_all_menu_application_service import GetAllMenuApplicationService
+from src.restaurants.application.services.querys.get_all_menu_application_service import GetAllMenuApplicationService
+from src.restaurants.application.services.commands.create_menu_application_service import CreateMenuItemApplicationService
 from src.restaurants.infraestructure.repository.menu_repository_impl import MenuRepositoryImpl
 from src.restaurants.infraestructure.repository.restaurant_repository_impl import RestaurantRepositoryImpl
-from src.restaurants.application.services.create_menu_application_service import CreateMenuItemApplicationService
 from src.shared.db.database import get_session
 
 

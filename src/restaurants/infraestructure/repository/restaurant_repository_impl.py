@@ -1,7 +1,7 @@
 
 
 
-from typing import Optional
+from typing import List, Optional
 from sqlmodel import Session, select
 from src.restaurants.domain.repository.i_restaurant_repository import IRestaurantRepository
 from src.restaurants.domain.restaurant import Restaurant
@@ -19,8 +19,14 @@ class RestaurantRepositoryImpl(IRestaurantRepository):
         statement = select(RestaurantModel).where(RestaurantModel.id == restaurant_id)
         result = self.db.exec(statement)
         return result.first()
+    
+    async def get_restaurant_by_name(self, name: str) -> List[Restaurant]:
+        statement = select(RestaurantModel).where(RestaurantModel.name == name)
+        results = self.db.exec(statement)
+        restaurants = results.all()
+        return [RestaurantMapper.to_domain(r) for r in restaurants]
 
-    async def get_all_restaurants(self) -> list[Restaurant]:
+    async def get_all_restaurants(self) -> List[Restaurant]:
         statement = select(RestaurantModel)
         results = self.db.exec(statement)
         restaurants =  results.all()
@@ -31,6 +37,7 @@ class RestaurantRepositoryImpl(IRestaurantRepository):
         self.db.add(restaurant_model)
         self.db.commit()
         self.db.refresh(restaurant_model)
+        restaurant = RestaurantMapper.to_domain(restaurant_model)
         return restaurant
 
     async def update_restaurant(self, restaurant: Restaurant) -> Restaurant:
