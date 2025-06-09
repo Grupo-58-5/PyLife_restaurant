@@ -22,7 +22,7 @@ branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 
 def create_user_table():
-    op.create_table('user',
+    op.create_table('users',
         sa.Column('id', UUID(as_uuid=True),server_default=sa.text("gen_random_uuid()"), nullable=False),
         sa.Column('name', sqlmodel.sql.sqltypes.AutoString(), nullable=False),
         sa.Column('email', sqlmodel.sql.sqltypes.AutoString(), nullable=False),
@@ -39,4 +39,5 @@ def upgrade() -> None:
 
 def downgrade() -> None:
     """Downgrade schema."""
-    op.drop_table("user")
+    op.drop_table("users")
+    op.execute("DROP TYPE IF EXISTS roles;")

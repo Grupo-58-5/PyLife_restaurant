@@ -6,7 +6,8 @@ from src.restaurants.domain.repository.i_restaurant_repository import IRestauran
 from src.shared.utils.i_application_service import IApplicationService
 
 
-ctlass GetAllRestaurantApplicationService(IApplicationService[None, list[BaseRestaurantResponse]]):
+class GetAllRestaurantApplicationService(IApplicationService[None, list[BaseRestaurantResponse]]):
+
     def __init__(self, restaurant_repository: IRestaurantRepository):
         super().__init__()
         self.repository = restaurant_repository

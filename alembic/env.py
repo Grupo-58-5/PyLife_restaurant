@@ -4,12 +4,20 @@ import os
 
 from sqlalchemy import engine_from_config
 from sqlalchemy import pool
+from sqlmodel import SQLModel
 
 from alembic import context
 
+from src.restaurants.infraestructure.model.restaurant_model import RestaurantModel
+from src.auth.infraestructure.model.user_model import UserModel
+
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
-load_dotenv(dotenv_path=os.path.join(os.path.dirname(__file__), '../../.env'))
+from pathlib import Path
+from dotenv import load_dotenv
+
+env_path = Path(__file__).resolve().parents[1] / ".env"
+load_dotenv(dotenv_path=env_path)
 
 DB_NAME = os.getenv("DB_NAME")
 DB_USERNAME=os.getenv("DB_USERNAME")
@@ -30,7 +38,7 @@ if config.config_file_name is not None:
 # for 'autogenerate' support
 # from myapp import mymodel
 # target_metadata = mymodel.Base.metadata
-target_metadata = None
+target_metadata = SQLModel.metadata
 
 # other values from the config, defined by the needs of env.py,
 # can be acquired:

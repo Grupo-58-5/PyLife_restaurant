@@ -27,7 +27,7 @@ from src.shared.application.ports.hash_handler import HashHelper
 from src.shared.infraestructure.adapters.bcrypt_hash_adapter import BcryptHashAdapter
 from src.shared.application.ports.auth_handler import AuthHandler
 from src.auth.infraestructure.JWT.JWT_auth_adapter import JWTAuthAdapter
-from src.auth.infraestructure.JWT.dependencies.get_user import GetUser
+# from src.auth.infraestructure.JWT.dependencies.get_user import GetUser
 from src.auth.infraestructure.JWT.dependencies.verify_scope import VerifyScope
 from src.shared.utils.result import Result
 

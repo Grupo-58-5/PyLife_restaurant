@@ -7,23 +7,25 @@ from src.auth.infraestructure.routes.auth_routes import router as auth_router
 from src.auth.infraestructure.routes.user_routes import router as user_router
 from contextlib import asynccontextmanager
 
-@asynccontextmanager
-async def lifespan(_: FastAPI):
-    try:
-        await create_tables()
-        yield
-    except RuntimeError as e:
-        print(e)
 
-app = FastAPI(lifespan=lifespan)
+##? Commented because do we need to create the tables with alembic before running the app
+# @asynccontextmanager
+# async def lifespan(_: FastAPI):
+#     try:
+#         await create_tables()
+#         yield
+#     except RuntimeError as e:
+#         print(e)
 
+# app = FastAPI(lifespan=lifespan)
+
+app = FastAPI() 
 
 def get_app() -> FastAPI:
     app = FastAPI(
         title = "Restaurant and Reservation API by PyLife.dev",
         description="Project about a Restaurant and Reservation administration API by PyLife.dev",
         version = "0.1.0",
-        lifespan = lifespan
     )
     
 
