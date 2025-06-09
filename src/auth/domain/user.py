@@ -3,13 +3,7 @@ from src.auth.domain.enum.role import  Roles
 
 class User:
 
-    def __init__(self,
-        id: UUID,
-        name: str,
-        email: str,
-        password: str,
-        role: Roles | None = Roles.CLIENT
-    ):
+    def __init__(self, id: UUID, name: str, email: str, password: str, role: Roles = Roles.CLIENT):
         self.id: str = id
         self.name: str = name
         self.email: str = email
