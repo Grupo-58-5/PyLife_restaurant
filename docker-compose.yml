@@ -1,8 +1,8 @@
 services:
-
-  db_python:
-    image: postgres:15
-    restart: always
+  
+  pythondb:
+    image: postgres:17.2
+    # restart: always
     ports:
       - "${DB_PORT:-5432}:5432"
     environment:
@@ -13,20 +13,54 @@ services:
     networks:
       - restaurant-network
     volumes:
-      - postgres_data:/var/lib/postgresql/data
-
-  pgadmin:
+      - ./postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+  
+  pgadmin4:
     image: dpage/pgadmin4:6.17
     restart: always
     environment:
-      PGADMIN_DEFAULT_EMAIL: admin@admin.com
-      PGADMIN_DEFAULT_PASSWORD: admin
+      PGADMIN_DEFAULT_EMAIL: 'admin@gmail.com'
+      PGADMIN_DEFAULT_PASSWORD: 'admin'
     ports:
-      - "5050:80"
+      - "80:80"
     depends_on:
-      - db_python
+      - pythondb
     networks:
       - restaurant-network
+
+  # TODO: Uncomment the following section to enable the web service
+  # ? This section is currently commented out to avoid issues with the web service.
+  # web:
+  #   build: .
+  #   command: uvicorn src.main:app --reload --workers 1 --host 0.0.0.0 --port 8000
+  #   restart: always
+  #   container_name: Pylife_backend
+  #   volumes:
+  #     - ./project:/usr/src/app
+  #   ports:
+  #     - ${PORT}:8000
+  #   environment:
+  #     - PORT=${PORT}
+  #     - SECRET_KEY=${SECRET_KEY}
+  #     - ALGORITHM=${ALGORITHM}
+  #     - ACCESS_TOKEN_EXPIRE_MINUTES=${ACCESS_TOKEN_EXPIRE_MINUTES}
+  #     - DB_NAME=${DB_NAME}
+  #     - DB_USERNAME=${DB_USERNAME}
+  #     - DB_PASSWORD=${DB_PASSWORD}
+  #     - DB_HOST=${DB_HOST}
+  #     - DB_PORT=${DB_PORT}
+  #   env_file:
+  #     - ".env"
+  #   depends_on:
+  #     pythondb:
+  #       condition: service_healthy
+  #   networks:
+  #     - restaurant-network
 
 networks:
   restaurant-network:
