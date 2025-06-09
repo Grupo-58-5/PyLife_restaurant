@@ -30,11 +30,11 @@ def upgrade() -> None:
     )
 
     decoded = encoded.decode('utf-8')
-    sql_query = f""" INSERT INTO public."user"(name, email, password, role) VALUES ('Luigi Bastidas', 'luigi@test.com', '{decoded}', 'ADMIN');"""
+    sql_query = f""" INSERT INTO public."users"(name, email, password, role) VALUES ('Luigi Bastidas', 'luigi@test.com', '{decoded}', 'ADMIN');"""
     op.execute(sql_query)
 
 
 def downgrade() -> None:
     """Downgrade schema."""
-    sql_query = """DELETE FROM public."user" WHERE email = 'luigi@test.com';"""
+    sql_query = """DELETE FROM public."users" WHERE email = 'luigi@test.com';"""
     op.execute(sql_query)
