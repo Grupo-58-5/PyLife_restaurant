@@ -18,7 +18,7 @@ class Restaurant:
         self.menu = menu
 
     def __repr__(self):
-        return f"Restaurant(id={self.id}, name={self.name}, address={self.address})"
+        return f"Restaurant(id={self.id}, name={self.name.get_name()}, address={self.address.get_address()})"
     
     def __eq__(self, other):
         if not isinstance(other, Restaurant):
