@@ -5,10 +5,9 @@ from typing import TYPE_CHECKING, List
 from uuid import UUID, uuid4
 from sqlmodel import Relationship, SQLModel, Field
 
-#from src.menus.infraestructure.model.menu_model import MenuModel
 
 if TYPE_CHECKING:
-    from src.menus.infraestructure.model.menu_model import MenuModel
+    from src.restaurants.infraestructure.model.menu_model import MenuModel
 
 
 class RestaurantModel(SQLModel, table=True):

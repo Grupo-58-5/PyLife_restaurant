@@ -15,7 +15,7 @@ class MenuModel(SQLModel, table=True):
     """
     Model for the Menu entity. It represents a menu in the database.
     """
-    __tablename__ = "menu"
+    __tablename__ = "menus"
     
     id: UUID | None = Field(default_factory=uuid4, primary_key=True, index=True)
     name: str = Field(index=True, nullable=False)
