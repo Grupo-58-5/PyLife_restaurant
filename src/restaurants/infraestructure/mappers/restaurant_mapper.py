@@ -23,6 +23,7 @@ class RestaurantMapper():
                 opening_time=restaurant_model.opening_time,
                 closing_time=restaurant_model.closing_time
             ),
+            menu = [MenuMapper.to_domain(item) for item in restaurant_model.menu_items] if restaurant_model.menu_items else []  
             
         ) 
 
@@ -43,10 +44,10 @@ class MenuMapper():
     @staticmethod
     def to_model(data: MenuEntity) -> MenuModel:
         return MenuModel(
-            id=uuid4(),
-            name=data.get_name(),
-            description=data.get_description(),
-            category=data.get_category(),
+            id=data.get_id(),
+            name=data.name,
+            description=data.description,
+            category=data.category,
         )
     
     @staticmethod

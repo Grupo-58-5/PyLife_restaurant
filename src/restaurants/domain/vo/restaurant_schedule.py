@@ -23,9 +23,11 @@ class RestaurantSchedule:
         """Factory method to create a RestaurantSchedule instance."""
         return cls(opening_time, closing_time)
 
+    @property
     def opening_time(self) -> time:
         return self._opening_time
     
+    @property
     def closing_time(self) -> time:
         return self._closing_time
     

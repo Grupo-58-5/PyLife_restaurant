@@ -18,7 +18,8 @@ class RestaurantName():
         """Factory method to create a RestaurantName instance."""
         return cls(name)
     
-    def get_name(self) -> str:
+    @property
+    def name(self) -> str:
         return self._name
 
     def __str__(self) -> str:

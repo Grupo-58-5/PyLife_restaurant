@@ -13,7 +13,8 @@ class RestaurantAddress():
         """Factory method to create a RestaurantAddress instance."""
         return cls(address)
     
-    def get_address(self) -> str:
+    @property
+    def address(self) -> str:
         """Returns the address."""
         return self._address
 

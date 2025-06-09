@@ -61,10 +61,10 @@ class CreateRestaurantApplicationService(IApplicationService[CreateRestaurantSch
                 closing_hour=restaurant.get_closing(),
                 menu= [
                     MenuItemBase(
-                        id=item.id,
-                        name=item.get_name(),
-                        description=item.get_description(),
-                        category=item.get_category()
+                        id=item.get_id(),
+                        name=item.name,
+                        description=item.description,
+                        category=item.category
                     ) for item in restaurant.get_menu()
                 ],
                 tables=[]  # Assuming no tables are defined at creation, can be added later
