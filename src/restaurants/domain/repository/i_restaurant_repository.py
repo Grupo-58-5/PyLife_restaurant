@@ -1,7 +1,7 @@
 
 
 from abc import ABC, abstractmethod
-from typing import List
+from typing import List, Optional
 from uuid import UUID
 
 from src.restaurants.application.schemas.entry.resaurant_schema_entry import CreateRestaurantSchema
@@ -20,7 +20,7 @@ class IRestaurantRepository(ABC):
         pass
 
     @abstractmethod
-    async def get_restaurant_by_id(self, restaurant_id: UUID) -> Restaurant:
+    async def get_restaurant_by_id(self, restaurant_id: UUID) -> Optional[Restaurant]:
         pass
 
     @abstractmethod

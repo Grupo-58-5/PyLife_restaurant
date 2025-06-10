@@ -34,7 +34,7 @@ async def create_restaurant(restaurant: CreateRestaurantSchema, repo: Restaurant
     service = CreateRestaurantApplicationService(repo)
     res = await service.execute(restaurant)
     if res.is_succes():
-        return res.value
+        return res.result()
     else:
         raise HTTPException(status_code=400, detail=res.get_error_message())
     
