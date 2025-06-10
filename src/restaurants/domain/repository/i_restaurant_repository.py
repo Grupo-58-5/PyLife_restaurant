@@ -6,6 +6,7 @@ from uuid import UUID
 
 from src.restaurants.application.schemas.entry.resaurant_schema_entry import CreateRestaurantSchema
 from src.restaurants.domain.restaurant import Restaurant
+from src.shared.utils.result import Result
 
 class IRestaurantRepository(ABC):
 
@@ -23,7 +24,7 @@ class IRestaurantRepository(ABC):
         pass
 
     @abstractmethod
-    async def create_restaurant(self, restaurant: Restaurant) -> Restaurant:
+    async def create_restaurant(self, restaurant: Restaurant) -> Result[Restaurant]:
         pass
 
     @abstractmethod

@@ -7,6 +7,7 @@ from src.restaurants.domain.repository.i_restaurant_repository import IRestauran
 from src.restaurants.domain.restaurant import Restaurant
 from src.restaurants.infraestructure.mappers.restaurant_mapper import RestaurantMapper
 from src.restaurants.infraestructure.model.restaurant_model import RestaurantModel
+from src.shared.utils.result import Result
 
 
 class RestaurantRepositoryImpl(IRestaurantRepository):
@@ -32,13 +33,16 @@ class RestaurantRepositoryImpl(IRestaurantRepository):
         restaurants =  results.all()
         return [RestaurantMapper.to_domain(r) for r in restaurants]
 
-    async def create_restaurant(self, restaurant: Restaurant) -> Restaurant:
-        restaurant_model = RestaurantMapper.to_model(restaurant)
-        self.db.add(restaurant_model)
-        self.db.commit()
-        self.db.refresh(restaurant_model)
-        restaurant = RestaurantMapper.to_domain(restaurant_model)
-        return restaurant
+    async def create_restaurant(self, restaurant: Restaurant) -> Result[Restaurant]:
+        try:
+            restaurant_model = RestaurantMapper.to_model(restaurant)
+            self.db.add(restaurant_model)
+            self.db.commit()
+            self.db.refresh(restaurant_model)
+            return Result.success(restaurant)
+        except Exception as e:
+            self.db.rollback()
+            return Result.failure(error=e, messg=f"Error creating restaurant: {str(e)}")
 
     async def update_restaurant(self, restaurant: Restaurant) -> Restaurant:
         pass

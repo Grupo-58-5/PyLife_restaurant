@@ -31,10 +31,10 @@ async def create_restaurant(restaurant: CreateRestaurantSchema, repo: Restaurant
     """
     Create a new restaurant endpoint.
     """
-    try:
-        service = CreateRestaurantApplicationService(repo)
-        res = await service.execute(restaurant)
-        return res
-    except Exception as e:
-        raise HTTPException(status_code=400, detail=str(e)) from e
+    service = CreateRestaurantApplicationService(repo)
+    res = await service.execute(restaurant)
+    if res.is_succes():
+        return res.value
+    else:
+        raise HTTPException(status_code=400, detail=res.get_error_message())
     
