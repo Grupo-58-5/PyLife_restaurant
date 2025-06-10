@@ -2,7 +2,13 @@
 
 
 from src.restaurants.domain.entity.table_entity import TableEntity
+from uuid import uuid4
+from src.restaurants.domain.entity.menu_entity import MenuEntity
 from src.restaurants.domain.restaurant import Restaurant
+from src.restaurants.domain.vo.restaurant_address import RestaurantAddress
+from src.restaurants.domain.vo.restaurant_name import RestaurantName
+from src.restaurants.domain.vo.restaurant_schedule import RestaurantSchedule
+from src.restaurants.infraestructure.model.menu_model import MenuModel
 from src.restaurants.infraestructure.model.restaurant_model import RestaurantModel
 from src.restaurants.infraestructure.model.table_model import TableModel
 
@@ -13,11 +19,13 @@ class RestaurantMapper():
     def to_domain(self, restaurant_model: RestaurantModel) -> Restaurant:
         return Restaurant(
             id = restaurant_model.id,
-            name = restaurant_model.name,
-            address = restaurant_model.location,
-            opening_hour = restaurant_model.opening_time,
-            closing_hour = restaurant_model.closing_time,
-            tables= [self.table_to_domian(t) for t in restaurant_model.tables] if restaurant_model.tables else []
+            name = RestaurantName.create(restaurant_model.name),
+            address = RestaurantAddress.create(restaurant_model.location),
+            schedule = RestaurantSchedule.create(
+                opening_time=restaurant_model.opening_time,
+                closing_time=restaurant_model.closing_time
+            ),
+            
         ) 
 
     @staticmethod
@@ -47,4 +55,26 @@ class RestaurantMapper():
             table_number=table.get_table_number(),
             capacity=table.get_seats(),
             location=table.get_location()
+            menu_items = [MenuMapper.to_model(item) for item in data.get_menu()] if data.get_menu() else [],
+        )    
+    
+
+class MenuMapper():
+
+    @staticmethod
+    def to_model(data: MenuEntity) -> MenuModel:
+        return MenuModel(
+            id=uuid4(),
+            name=data.get_name(),
+            description=data.get_description(),
+            category=data.get_category(),
+        )
+    
+    @staticmethod
+    def to_domain(menu_model: MenuModel) -> MenuEntity:
+        return MenuEntity.create(
+            id=menu_model.id,
+            name=menu_model.name,
+            description=menu_model.description,
+            category=menu_model.category
         )

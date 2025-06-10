@@ -2,6 +2,7 @@
 from src.restaurants.infraestructure.model.restaurant_model import RestaurantModel
 from src.restaurants.infraestructure.model.table_model import TableModel
 
+from src.restaurants.infraestructure.model.menu_model import MenuModel
 
 
 from src.shared.db.database import engine

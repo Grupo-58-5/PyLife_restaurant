@@ -3,6 +3,9 @@ from pydantic import BaseModel, Field, field_validator
 from datetime import time
 
 from src.restaurants.application.schemas.entry.create_table_schema import CreateTableSchema
+from src.restaurants.application.schemas.entry.create_menu_item_schema import CreateMenuItemSchema
+
+
 
 class CreateRestaurantSchema(BaseModel):
     """Schema for creating a new restaurant entry."""
@@ -15,10 +18,14 @@ class CreateRestaurantSchema(BaseModel):
         min_length=3,
         max_length=200,
     )
-    opening_hour: time = Field(default=time(8, 0)  
-        # Default opening time is 8:00 AM
-    )
-    closing_hour: time = Field(default=time(22, 0)
+
+    opening_hour: time = Field(default=time(8, 0))
+    
+    closing_hour: time = Field(default=time(22, 0))
+
+    menu_items: List[CreateMenuItemSchema] | None = Field(
+        default=None,
+        description="List of menu items for the restaurant",
     )
 
     tables: List[CreateTableSchema] | None = Field(

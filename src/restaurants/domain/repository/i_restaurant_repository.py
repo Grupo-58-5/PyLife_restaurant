@@ -1,23 +1,29 @@
 
 
 from abc import ABC, abstractmethod
+from typing import List, Optional
 from uuid import UUID
 
 from src.restaurants.domain.restaurant import Restaurant
-from src.restaurants.infraestructure.model.restaurant_model import RestaurantModel
+from src.shared.utils.result import Result
 
 class IRestaurantRepository(ABC):
 
     @abstractmethod
-    def get_all_restaurants(self) -> list[Restaurant]:
+    async def get_all_restaurants(self) -> List[Restaurant]:
         pass
 
     @abstractmethod
-    def get_restaurant_by_id(self, restaurant_id: UUID) -> Restaurant:
+    async def get_restaurant_by_name(self, name: str) -> List[Restaurant]:
+        """Retrieve restaurants by name."""
         pass
 
     @abstractmethod
-    def create_restaurant(self, restaurant: Restaurant) -> Restaurant:
+    async def get_restaurant_by_id(self, restaurant_id: UUID) -> Optional[Restaurant]:
+        pass
+
+    @abstractmethod
+    async def create_restaurant(self, restaurant: Restaurant) -> Result[Restaurant]:
         pass
 
     @abstractmethod
