@@ -10,12 +10,13 @@ from src.restaurants.domain.vo.restaurant_schedule import RestaurantSchedule
 
 
 class Restaurant:
-    def __init__(self, id: UUID, name: RestaurantName, address: RestaurantAddress, schedule: RestaurantSchedule, menu: List[MenuEntity] = []):
+    def __init__(self, id: UUID, name: RestaurantName, address: RestaurantAddress, schedule: RestaurantSchedule, menu: List[MenuEntity] | None = None):
         self.id = id
         self.name = name
         self.address = address
         self.schedule = schedule
-        self.menu = menu
+        self.menu = menu if menu is not None else []
+
 
     def __repr__(self):
         return f"Restaurant(id={self.id}, name={self.name.get_name()}, address={self.address.get_address()})"
@@ -26,7 +27,7 @@ class Restaurant:
         return self.id == other.id
     
     @classmethod
-    def create(cls, id: UUID, name: RestaurantName, address: RestaurantAddress, schedule: RestaurantSchedule, menu: List[MenuEntity] = []) -> "Restaurant":
+    def create(cls, id: UUID, name: RestaurantName, address: RestaurantAddress, schedule: RestaurantSchedule, menu: List[MenuEntity] | None = None) -> "Restaurant":
         """Factory method to create a Restaurant instance."""
         return cls(id, name, address, schedule, menu)
     
@@ -52,14 +53,27 @@ class Restaurant:
         """Adds a menu item to the restaurant's menu."""
         if not isinstance(menu_item, MenuEntity):
             raise ValueError("menu_item must be an instance of MenuEntity")
-        if len(self.menu) > 0:
+        if self.menu and len(self.menu) > 0:
             # Check if a menu item with the same name already exists
             # in the restaurant's menu
-            if menu_item in self.menu:
-                raise ValueError("Menu item already exists in the restaurant's menu")
+            new_name = menu_item.get_name().strip().lower()
+            existing_names = [item.get_name().strip().lower() for item in self.menu]
+            if new_name in existing_names:
+                raise ValueError("Menu item with the same name already exists in the restaurant's menu")
             
-            for item in self.menu:
-                if item.name() == menu_item.name():
-                    raise ValueError("Menu item with the same name already exists in the restaurant's menu")
-    
+        if self.menu is None:
+            self.menu = []
         self.menu.append(menu_item)
+
+    def add_menu_items_bulk(self, menu_items: List[MenuEntity]) -> None:
+        """Adds a list of menu items to the restaurant, validating duplicates after building the list."""
+        existing_names = {item.get_name().strip().lower() for item in self.menu}
+        new_names = set()
+
+        for item in menu_items:
+            name_clean = item.get_name().strip().lower()
+            if name_clean in existing_names or name_clean in new_names:
+                raise ValueError(f"Duplicate menu item name found: '{item.get_name()}'")
+            new_names.add(name_clean)
+
+        self.menu.extend(menu_items)

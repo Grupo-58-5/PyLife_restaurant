@@ -1,7 +1,7 @@
 services:
   
   pythondb:
-    image: postgres:17.2
+    image: postgres:15
     # restart: always
     ports:
       - "${DB_PORT:-5432}:5432"
@@ -22,12 +22,12 @@ services:
   
   pgadmin4:
     image: dpage/pgadmin4:6.17
-    restart: always
+    # restart: always
     environment:
       PGADMIN_DEFAULT_EMAIL: 'admin@gmail.com'
       PGADMIN_DEFAULT_PASSWORD: 'admin'
     ports:
-      - "80:80"
+      - "8081:80"
     depends_on:
       - pythondb
     networks:

@@ -3,6 +3,7 @@ from typing import List
 from uuid import UUID
 
 from src.restaurants.domain.entity.menu_entity import MenuEntity
+from src.shared.utils.result import Result
 
 
 class IMenuRepository(ABC):
@@ -15,7 +16,7 @@ class IMenuRepository(ABC):
         pass
 
     @abstractmethod
-    async def create_item_menu(self, menu_data: MenuEntity , restaurant_id: UUID) -> MenuEntity:
+    async def create_item_menu(self, menu_data: MenuEntity , restaurant_id: UUID) -> Result[MenuEntity]:
         pass
         
     @abstractmethod    
