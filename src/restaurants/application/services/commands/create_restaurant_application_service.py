@@ -70,4 +70,4 @@ class CreateRestaurantApplicationService(IApplicationService[CreateRestaurantSch
                 tables=[]  # Assuming no tables are defined at creation, can be added later
             )
         except Exception as e:
-            raise Exception(f"Error creating restaurant: {str(e)}") from e
+            raise Exception(f"{str(e)}") from e

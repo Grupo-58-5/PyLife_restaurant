@@ -23,8 +23,10 @@ async def get_restaurants(repo : RestaurantRepositoryImpl = Depends(get_reposito
         service = GetAllRestaurantApplicationService(repo)
         res= await service.execute()
         return res
+    except ValueError as ve:
+        raise HTTPException(status_code=400, detail=str(ve)) from ve
     except Exception as e:
-        raise HTTPException(status_code=400, detail=str(e)) from e
+        raise HTTPException(status_code=500, detail=str(e)) from e
 
 @router.post("/", response_model=RestaurantDetailResponse, status_code=status.HTTP_201_CREATED)
 async def create_restaurant(restaurant: CreateRestaurantSchema, repo: RestaurantRepositoryImpl = Depends(get_repository)):
@@ -35,6 +37,8 @@ async def create_restaurant(restaurant: CreateRestaurantSchema, repo: Restaurant
         service = CreateRestaurantApplicationService(repo)
         res = await service.execute(restaurant)
         return res
+    except ValueError as ve:
+        raise HTTPException(status_code=400, detail=str(ve)) from ve
     except Exception as e:
-        raise HTTPException(status_code=400, detail=str(e)) from e
+        raise HTTPException(status_code=500, detail=str(e)) from e
     
