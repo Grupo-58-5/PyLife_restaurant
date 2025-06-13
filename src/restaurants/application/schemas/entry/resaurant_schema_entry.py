@@ -33,11 +33,11 @@ class CreateRestaurantSchema(BaseModel):
         description="List of tables in the restaurant. If not provided, no tables will be created.",
     )
 
-    @field_validator("closing_hour")
-    @classmethod
-    def closing_after_opening(cls, v, info):
-        """Ensure that closing time is after opening time."""
-        opening_time = info.data.get("opening_time")
-        if opening_time is not None and v <= opening_time:
-            raise ValueError("closing_time must be after opening_time")
-        return v
+    # @field_validator("closing_hour")
+    # @classmethod
+    # def closing_after_opening(cls, v, info):
+    #     """Ensure that closing time is after opening time."""
+    #     opening_time = info.data.get("opening_time")
+    #     if opening_time is not None and v <= opening_time:
+    #         raise ValueError("closing_time must be after opening_time")
+    #     return v
