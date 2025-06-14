@@ -12,9 +12,8 @@ class UserName:
 
         self.full_name = full_name
 
-    @property
-    def email(self):
-        return self.email
+    def get_value(self):
+        return self.full_name
 
     @staticmethod
     def create(full_name: str):
