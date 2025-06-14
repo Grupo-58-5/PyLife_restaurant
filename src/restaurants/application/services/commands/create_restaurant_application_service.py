@@ -74,5 +74,8 @@ class CreateRestaurantApplicationService(IApplicationService[CreateRestaurantSch
                     ],
                     tables=[]  # Assuming no tables are defined at creation, can be added later
                 ))
+        except ValueError as ve:
+            print('veee')
+            return Result.failure(Exception(str(ve)), str(ve), 400)
         except Exception as e:
-            return Result.failure(Exception(str(e)), str(e), 500)
+            return Result.failure(e, str(e))
