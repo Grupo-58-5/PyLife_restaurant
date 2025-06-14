@@ -1,6 +1,10 @@
 from uuid import uuid4, UUID
 
 from src.auth.domain.user import User
+from src.auth.domain.value_object.user_email import UserEmail
+from src.auth.domain.value_object.user_name import UserName
+from src.auth.domain.value_object.user_password import UserPassword
+from src.auth.infraestructure.model.user_model import UserModel
 from src.auth.domain.enum.role import Roles
 from src.shared.utils.result import Result
 from src.shared.utils.i_application_service import IApplicationService
@@ -30,12 +34,16 @@ class CreateUserApplicationService(IApplicationService[UserSchemaEntry,Result[Us
         if(verify.value == True):
             print("Usuario ya registrado")
             return Result[User].failure(ValueError,'email already registered',409)
-        
-        print("Usuario nuevo")
 
         user_id: UUID = uuid4()
         password_hash = await self.hash.get_password_hashed(data.password)
-        user = User(user_id,data.name,data.email,password_hash, Roles.CLIENT)
+        user = User(
+            user_id,
+            UserName.create(data.name),
+            UserEmail.create(data.email),
+            UserPassword.create(password_hash),
+            Roles.CLIENT
+        )
 
         save: Result[User] = await self.repo.create_user(user=user)
 

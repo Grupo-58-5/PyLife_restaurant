@@ -10,8 +10,7 @@ class UserPassword:
 
         self.password = password
 
-    @property
-    def password(self):
+    def get_value(self):
         return self.password
 
     @staticmethod

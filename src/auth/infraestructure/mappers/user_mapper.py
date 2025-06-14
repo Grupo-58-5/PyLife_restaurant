@@ -1,4 +1,7 @@
 from src.auth.domain.user import User
+from src.auth.domain.value_object.user_email import UserEmail
+from src.auth.domain.value_object.user_name import UserName
+from src.auth.domain.value_object.user_password import UserPassword
 from src.auth.infraestructure.model.user_model import UserModel
 
 class UserMapper:
@@ -7,9 +10,9 @@ class UserMapper:
     def to_domain(user_model: UserModel) -> User:
         return User(
             id=user_model.id,
-            name=user_model.name,
-            email=user_model.email,
-            password=user_model.password,
+            name=UserName.create(user_model.name),
+            email=UserEmail.create(user_model.email),
+            password=UserPassword.create(user_model.password),
             role=user_model.role
         )
 
