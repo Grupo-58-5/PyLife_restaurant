@@ -8,5 +8,9 @@ from src.restaurants.infraestructure.model.menu_model import MenuModel
 from src.shared.db.database import engine
 from sqlmodel import SQLModel
 
+# async def create_tables():
+#     SQLModel.metadata.create_all(engine)
+
 async def create_tables():
-    SQLModel.metadata.create_all(engine)
+    async with engine.begin() as conn:
+        await conn.run_sync(SQLModel.metadata.create_all)
