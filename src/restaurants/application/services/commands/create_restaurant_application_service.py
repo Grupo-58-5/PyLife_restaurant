@@ -5,7 +5,9 @@ from uuid import uuid4
 from src.restaurants.application.schemas.entry.resaurant_schema_entry import CreateRestaurantSchema
 from src.restaurants.application.schemas.response.menu_item_response import MenuItemBase
 from src.restaurants.application.schemas.response.restaurant_schema_response import BaseRestaurantResponse, RestaurantDetailResponse
+from src.restaurants.application.schemas.response.table_restaurant_response import BaseTableResponse
 from src.restaurants.domain.entity.menu_entity import MenuEntity
+from src.restaurants.domain.entity.table_entity import TableEntity
 from src.restaurants.domain.repository.i_restaurant_repository import IRestaurantRepository
 from src.restaurants.domain.restaurant import Restaurant
 from src.restaurants.domain.vo.restaurant_address import RestaurantAddress
@@ -51,6 +53,18 @@ class CreateRestaurantApplicationService(IApplicationService[CreateRestaurantSch
             else:
                 print("No menu items provided, creating restaurant without menu.")
 
+            if data.tables:
+                for item in data.tables:
+                    tables = TableEntity.create(
+                        id= uuid4(),
+                        table_number=item.table_number,
+                        seats=item.seats,
+                        location=item.location.value
+                    )
+                    restaurant.add_table(tables)
+            else:
+                print("No tables provided, creating restaurant without tables.")
+
             saved_restaurant = await self.repository.create_restaurant(restaurant)
             if not saved_restaurant.is_succes():
                 return Result.failure(Exception('Strange error'), saved_restaurant.messg, 400)
@@ -72,7 +86,14 @@ class CreateRestaurantApplicationService(IApplicationService[CreateRestaurantSch
                             category=item.get_category()
                         ) for item in restaurant.get_menu()
                     ],
-                    tables=[]  # Assuming no tables are defined at creation, can be added later
+                    tables=[
+                        BaseTableResponse(
+                            id= item.get_id(),
+                            table_number=item.get_table_number(),
+                            seats=item.get_seats(),
+                            location=item.get_location()
+                        ) for item in restaurant.get_tables()
+                    ]
                 ))
         except Exception as e:
             return Result.failure(Exception(str(e)), str(e), 500)

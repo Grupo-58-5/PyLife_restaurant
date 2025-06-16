@@ -21,7 +21,10 @@ class RestaurantRepositoryImpl(IRestaurantRepository):
         statement =  statement = (
             select(RestaurantModel)
             .where(RestaurantModel.id == restaurant_id)
-            .options(selectinload(RestaurantModel.menu_items))
+            .options(
+                selectinload(RestaurantModel.menu_items)
+                # selectinload(RestaurantModel.menu_items)
+                )
         )
         result = self.db.exec(statement)
         return RestaurantMapper.to_domain(result.one_or_none()) if result else None
@@ -45,6 +48,7 @@ class RestaurantRepositoryImpl(IRestaurantRepository):
             self.db.commit()
             self.db.refresh(restaurant_model)
             _ = restaurant_model.menu_items  # Load menu items if any
+            _ = restaurant_model.tables
             return Result.success(RestaurantMapper.to_domain(restaurant_model))
         except Exception as e:
             self.db.rollback()
