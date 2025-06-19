@@ -7,7 +7,7 @@ class UserEmail:
     def __init__(self, email: str):
 
         if email is None:
-            raise ValueError("Invalid email value")
+            raise ValueError("Invalid email value can't be None")
 
         email_regex = re.compile(
             r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
@@ -20,8 +20,7 @@ class UserEmail:
 
         self.email = email
 
-    @property
-    def email(self):
+    def get_value(self):
         return self.email
 
     @staticmethod

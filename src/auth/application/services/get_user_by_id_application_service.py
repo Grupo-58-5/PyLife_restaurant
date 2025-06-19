@@ -28,6 +28,6 @@ class GetUserByIdApplicationService(IApplicationService[UserByIdSchemaEntry,Resu
 
         user = find_user_result.value
 
-        return Result[UserAllSchemaeResponse].success(UserAllSchemaeResponse(**user.__dict__))
+        return Result[UserAllSchemaeResponse].success(UserAllSchemaeResponse(**user.__dict__()))
 
 

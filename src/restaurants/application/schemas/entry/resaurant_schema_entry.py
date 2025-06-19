@@ -2,6 +2,7 @@ from typing import List
 from pydantic import BaseModel, Field, field_validator
 from datetime import time
 
+from src.restaurants.application.schemas.entry.create_table_schema import CreateTableSchema
 from src.restaurants.application.schemas.entry.create_menu_item_schema import CreateMenuItemSchema
 
 
@@ -27,6 +28,10 @@ class CreateRestaurantSchema(BaseModel):
         description="List of menu items for the restaurant",
     )
 
+    tables: List[CreateTableSchema] | None = Field(
+        default=None,
+        description="List of tables in the restaurant. If not provided, no tables will be created.",
+    )
 
     # @field_validator("closing_hour")
     # @classmethod
