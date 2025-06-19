@@ -23,7 +23,7 @@ class RestaurantMapper():
                 opening_time=restaurant_model.opening_time,
                 closing_time=restaurant_model.closing_time
             ),
-            
+            menu = [MenuMapper.to_domain(item) for item in restaurant_model.menu_items] if restaurant_model.menu_items else [],
         ) 
 
     @staticmethod
