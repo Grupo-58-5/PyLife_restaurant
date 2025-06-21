@@ -7,6 +7,9 @@ if TYPE_CHECKING:
     # Referencias de tipo para evitar ciclos
     from .table_model import TableModel
 
+if TYPE_CHECKING:
+    from src.restaurants.infraestructure.model.menu_model import MenuModel
+
 
 class RestaurantModel(SQLModel, table=True):
     """Model representing a restaurant in the database."""
@@ -19,3 +22,4 @@ class RestaurantModel(SQLModel, table=True):
     closing_time: time = Field(nullable=False)
 
     tables: List["TableModel"] = Relationship(back_populates="restaurant")
+    menu_items: List["MenuModel"] = Relationship(back_populates="restaurant")

@@ -30,7 +30,7 @@ from src.auth.infraestructure.JWT.JWT_auth_adapter import JWTAuthAdapter
 # from src.auth.infraestructure.JWT.dependencies.get_user import GetUser
 from src.auth.infraestructure.JWT.dependencies.verify_scope import VerifyScope
 from src.shared.utils.result import Result
-
+from src.shared.db.database import TESTING
 router = APIRouter(
     prefix="/auth",
     tags=["Auth"]
@@ -38,9 +38,10 @@ router = APIRouter(
 
 auth = JWTAuthAdapter()
 
-async def get_repository(session: Session = Depends(get_session)) -> UserRepositoryImpl:
+async def get_repository(session: AsyncSession = Depends(get_session)) -> UserRepositoryImpl:
     """Get an instance of the UserRepositoryImpl. """
     print("Session utilizado: ",session)
+    print("Base de datos test: ",TESTING)
     return UserRepositoryImpl(db=session)
 
 async def get_hash_password() -> HashHelper:

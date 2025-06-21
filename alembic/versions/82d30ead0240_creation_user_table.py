@@ -22,10 +22,10 @@ branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 
 def create_user_table():
-    op.create_table('users',
+    op.create_table('user',
         sa.Column('id', UUID(as_uuid=True),server_default=sa.text("gen_random_uuid()"), nullable=False),
         sa.Column('name', sqlmodel.sql.sqltypes.AutoString(), nullable=False),
-        sa.Column('email', sqlmodel.sql.sqltypes.AutoString(), nullable=False),
+        sa.Column('email', sqlmodel.sql.sqltypes.AutoString(), nullable=False, unique=True),
         sa.Column('password', sqlmodel.sql.sqltypes.AutoString(), nullable=True),
         sa.Column('role', sa.Enum('ADMIN', 'CLIENT', name='roles'), nullable=False),
         sa.PrimaryKeyConstraint('id')

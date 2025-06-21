@@ -30,6 +30,10 @@ cd PyLife_restaurant
 4. **Ejecuta las migraciones**
    ```
    alembic upgrade head
+
+- Si tienes que crear migraciones
+   ```
+   alembic revision --autogenerate -m "mensaje"
 5. **Docker Setup**
 - Una vez ajustado las variables de entono en el `.env`
 - Levanta los servicios

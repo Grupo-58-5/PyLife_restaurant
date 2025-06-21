@@ -1,7 +1,7 @@
 services:
   
   pythondb:
-    image: postgres:17.2
+    image: postgres:15
     # restart: always
     ports:
       - "${DB_PORT:-5432}:5432"
@@ -22,17 +22,19 @@ services:
   
   pgadmin4:
     image: dpage/pgadmin4:6.17
-    restart: always
+    # restart: always
     environment:
       PGADMIN_DEFAULT_EMAIL: 'admin@gmail.com'
       PGADMIN_DEFAULT_PASSWORD: 'admin'
     ports:
-      - "80:80"
+      - "8081:80"
     depends_on:
       - pythondb
     networks:
       - restaurant-network
 
+  # TODO: Uncomment the following section to enable the web service
+  # ? This section is currently commented out to avoid issues with the web service.
   # web:
   #   build: .
   #   command: uvicorn src.main:app --reload --workers 1 --host 0.0.0.0 --port 8000
