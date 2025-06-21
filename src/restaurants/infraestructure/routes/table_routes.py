@@ -8,8 +8,8 @@ from sqlmodel import Session
 
 from src.restaurants.application.schemas.entry.create_table_schema import CreateTableSchema
 from src.restaurants.application.schemas.entry.get_table_entry_schema import GetTableEntrySchema
-from src.restaurants.application.schemas.entry.update_table_entry_schema import UpdateTableSchema
 from src.restaurants.application.services.commands.create_table_application_service import CreateTableApplicationService
+from src.restaurants.application.services.commands.delete_table_application_service import DeleteTableApplicationService
 from src.restaurants.application.services.commands.update_table_application_service import UpdateTableApplicationService
 from src.restaurants.application.services.querys.get_all_table_application_service import GetAllTableApplicationService
 from src.restaurants.infraestructure.repository.restaurant_repository_impl import RestaurantRepositoryImpl
@@ -39,11 +39,11 @@ async def get_table(restaurant_id: UUID, restaurant_repo : RestaurantRepositoryI
         raise HTTPException(status_code=400, detail=str(e)) from e
     
 @router.post("/{restaurant_id}", summary="Create table for a restaurant")
-async def create_table(table_data: CreateTableSchema, restaurant_repo: RestaurantRepositoryImpl = Depends(get_restaurant_repository), table_repo: TableRepositoryImpl = Depends(get_table_repository) ):
+async def create_table(restaurant_id: UUID, table_data: CreateTableSchema, restaurant_repo: RestaurantRepositoryImpl = Depends(get_restaurant_repository), table_repo: TableRepositoryImpl = Depends(get_table_repository) ):
 
     try:
         service = CreateTableApplicationService(table_repo, restaurant_repo)
-        result = await service.execute(table_data)
+        result = await service.execute(restaurant_id, table_data)
         if result.is_error():
             raise HTTPException(status_code=400, detail=result.messg)
         return result.result()
@@ -51,7 +51,7 @@ async def create_table(table_data: CreateTableSchema, restaurant_repo: Restauran
         raise HTTPException(status_code=400, detail=str(e)) from e
 
 @router.put("/{table_id}", summary="Update table by ID")
-async def update_table(table_id: UUID, table_data: UpdateTableSchema, table_repo: TableRepositoryImpl = Depends(get_table_repository) ):
+async def update_table(table_id: UUID, table_data: CreateTableSchema, table_repo: TableRepositoryImpl = Depends(get_table_repository) ):
 
     try:
         service = UpdateTableApplicationService(table_repo)
@@ -63,9 +63,12 @@ async def update_table(table_id: UUID, table_data: UpdateTableSchema, table_repo
         raise HTTPException(status_code=400, detail=str(e)) from e
 
 @router.delete("/{table_id}", summary="Delete table by ID")
-async def delete_table(table_id: UUID, table_repo: TableRepositoryImpl = Depends(get_table_repository) ):
+async def delete_table(table_id: UUID, table_repo: TableRepositoryImpl = Depends(get_table_repository)):
     try:
-        table_repo.delete_item_table(table_id)
+        service = DeleteTableApplicationService(table_repo)
+        result = await service.execute(table_id)
+        if result.is_error():
+            raise HTTPException(status_code=400, detail=result.messg)
         return {"message": "Table deleted successfully"}
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e)) from e

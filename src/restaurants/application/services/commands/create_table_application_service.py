@@ -1,4 +1,4 @@
-from uuid import uuid4
+from uuid import UUID, uuid4
 from src.restaurants.application.schemas.entry.create_table_schema import CreateTableSchema
 from src.restaurants.application.schemas.response.table_restaurant_response import BaseTableResponse
 from src.restaurants.domain.entity.table_entity import TableEntity, TableLocation
@@ -16,13 +16,13 @@ class CreateTableApplicationService(IApplicationService[CreateTableSchema, Resul
         self.table_repository = table_repository
         self.restaurant_repository = restaurant_repository
 
-    async def execute(self, data: CreateTableSchema) -> Result[BaseTableResponse]:
+    async def execute(self, restaurant_id: UUID, data: CreateTableSchema) -> Result[BaseTableResponse]:
         try:
-            restaurant = await self.restaurant_repository.get_restaurant_by_id(data.restaurant_id)
+            restaurant = await self.restaurant_repository.get_restaurant_by_id(restaurant_id)
             if not restaurant:
                 return Result.failure(
                     error=ValueError("Restaurant not found"),
-                    messg=f"Restaurant with ID {data.restaurant_id} does not exist."
+                    messg=f"Restaurant with ID {restaurant_id} does not exist."
                 )
             
             table = TableEntity.create(
@@ -33,7 +33,7 @@ class CreateTableApplicationService(IApplicationService[CreateTableSchema, Resul
             )
             
             restaurant.add_table(table)
-            saved_table = await self.table_repository.create_item_table(table, data.restaurant_id)
+            saved_table = await self.table_repository.create_item_table(table, restaurant_id)
             if saved_table.is_error():
                 return Result.failure(
                     error=saved_table.error,

@@ -18,8 +18,5 @@ class CreateTableSchema(BaseModel):
     table_number: int = Field(..., gt=0, description=" Table number must be a positive integer.")
     seats: int = Field(..., gt=0, description="Number of seats at the table.")
     location: TableLocation = Field(description="Table location.")
-    restaurant_id: UUID | None = Field(
-        default=None,
-        description="ID of the restaurant to which the table item belongs"
-    )
+    
 
