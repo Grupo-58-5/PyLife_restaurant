@@ -1,6 +1,6 @@
-from uuid import uuid4
 from fastapi import APIRouter, Depends, HTTPException, status
-from sqlmodel import Session
+
+from sqlmodel.ext.asyncio.session import AsyncSession
 from src.restaurants.application.services.commands.create_restaurant_application_service import CreateRestaurantApplicationService
 from src.restaurants.application.services.querys.get_all_restaurant_application_sevice import GetAllRestaurantApplicationService
 from src.restaurants.infraestructure.repository.restaurant_repository_impl import RestaurantRepositoryImpl
@@ -13,7 +13,7 @@ from src.shared.db.database import get_session
 
 router = APIRouter(prefix="/restaurants", tags=["Restaurants"])
 
-async def get_repository(session: Session = Depends(get_session)) -> RestaurantRepositoryImpl:
+async def get_repository(session: AsyncSession = Depends(get_session)) -> RestaurantRepositoryImpl:
     """Get an instance of the RestaurantRepositoryImpl. """
     return RestaurantRepositoryImpl(db=session)
 

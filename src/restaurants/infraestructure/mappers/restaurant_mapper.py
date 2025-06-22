@@ -1,6 +1,3 @@
-
-
-
 from src.restaurants.domain.entity.table_entity import TableEntity
 from uuid import uuid4
 from src.restaurants.domain.entity.menu_entity import MenuEntity
@@ -16,7 +13,7 @@ from src.restaurants.infraestructure.model.table_model import TableModel
 class RestaurantMapper():
 
     @staticmethod
-    def to_domain(self, restaurant_model: RestaurantModel) -> Restaurant:
+    def to_domain(restaurant_model: RestaurantModel) -> Restaurant:
         return Restaurant(
             id = restaurant_model.id,
             name = RestaurantName.create(restaurant_model.name),
@@ -54,8 +51,7 @@ class RestaurantMapper():
             id=table.get_id(),
             table_number=table.get_table_number(),
             capacity=table.get_seats(),
-            location=table.get_location(),
-            menu_items = [MenuMapper.to_model(item) for item in data.get_menu()] if data.get_menu() else [],
+            location=table.get_location()
         )    
     
 
