@@ -54,7 +54,7 @@ class RestaurantMapper():
             id=table.get_id(),
             table_number=table.get_table_number(),
             capacity=table.get_seats(),
-            location=table.get_location()
+            location=table.get_location(),
             menu_items = [MenuMapper.to_model(item) for item in data.get_menu()] if data.get_menu() else [],
         )    
     

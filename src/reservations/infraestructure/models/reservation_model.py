@@ -1,13 +1,12 @@
 
 
 from datetime import datetime
-from PyLife_restaurant.src.reservations.domain.reservation import ReservationStatus
+from src.reservations.domain.reservation import ReservationStatus
 from sqlmodel import Field, SQLModel
-from src.common.db.database import Base
 from uuid import UUID, uuid4
 
 
-class ReservationModel(SQLModel, Base):
+class ReservationModel(SQLModel, table=True):
     """Model for reservations in the database."""
     
     __tablename__ = "reservations"
