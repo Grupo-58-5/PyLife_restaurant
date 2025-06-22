@@ -2,9 +2,10 @@
 
 
 from fastapi import APIRouter
-from uuid import uuid4, UUID
-from fastapi import APIRouter, Depends, HTTPException, status
-from sqlmodel import Session
+from uuid import UUID
+from fastapi import APIRouter, Depends, HTTPException
+from sqlmodel.ext.asyncio.session import AsyncSession
+
 from src.restaurants.application.schemas.entry.create_menu_item_schema import CreateMenuItemSchema
 from src.restaurants.application.schemas.entry.get_menu_entry_schema import GetMenuEntrySchema
 from src.restaurants.application.services.querys.get_all_menu_application_service import GetAllMenuApplicationService
@@ -14,11 +15,11 @@ from src.restaurants.infraestructure.repository.restaurant_repository_impl impor
 from src.shared.db.database import get_session
 
 
-async def get_restaurant_repository(session: Session = Depends(get_session)) -> RestaurantRepositoryImpl:
+async def get_restaurant_repository(session: AsyncSession = Depends(get_session)) -> RestaurantRepositoryImpl:
     """Get an instance of the RestaurantRepositoryImpl. """
     return RestaurantRepositoryImpl(db=session)
 
-async def get_menu_repository(session: Session = Depends(get_session)) -> MenuRepositoryImpl:
+async def get_menu_repository(session: AsyncSession = Depends(get_session)) -> MenuRepositoryImpl:
     """Get an instance of the MenuRepositoryImpl. """
     return MenuRepositoryImpl(db=session)
 

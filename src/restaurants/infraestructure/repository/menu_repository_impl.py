@@ -3,7 +3,8 @@
 
 from typing import List
 from uuid import UUID
-from sqlmodel import Session, select
+from sqlmodel.ext.asyncio.session import AsyncSession
+from sqlmodel import select
 from src.restaurants.domain.entity.menu_entity import MenuEntity
 from src.restaurants.domain.repository.i_menu_repository import IMenuRepository
 from src.restaurants.infraestructure.model.menu_model import MenuModel
@@ -17,7 +18,7 @@ class MenuRepositoryImpl(IMenuRepository):
     This class is responsible for managing the menu data.
     """
 
-    def __init__(self, db : Session):
+    def __init__(self, db : AsyncSession):
         super().__init__()
         self.db = db
 
@@ -26,7 +27,7 @@ class MenuRepositoryImpl(IMenuRepository):
         Retrieves the menu for a specific restaurant.
         """
         statement = select(MenuModel).where(MenuModel.restaurant_id == restaurant_id)
-        menu_model = self.db.exec(statement).all()
+        menu_model = await self.db.exec(statement).all()
         if not menu_model:
             return []
         ## missing mapper
@@ -46,11 +47,11 @@ class MenuRepositoryImpl(IMenuRepository):
                 restaurant_id=restaurant_id
             )
             self.db.add(menu_model)
-            self.db.commit()
-            self.db.refresh(menu_model)
+            await self.db.commit()
+            await self.db.refresh(menu_model)
             return Result.success(menu_data)
         except Exception as e:
-            self.db.rollback()
+            await self.db.rollback()
             return Result.failure(
                 error=e,
                 messg=f"Error creating menu item: {str(e)}"

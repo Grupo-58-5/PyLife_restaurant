@@ -1,11 +1,10 @@
-from uuid import uuid4
 from fastapi import APIRouter, Depends, HTTPException, status
-from sqlmodel import Session
+
+from sqlmodel.ext.asyncio.session import AsyncSession
 from src.restaurants.application.services.commands.create_restaurant_application_service import CreateRestaurantApplicationService
 from src.restaurants.application.services.querys.get_all_restaurant_application_sevice import GetAllRestaurantApplicationService
 from src.restaurants.infraestructure.repository.restaurant_repository_impl import RestaurantRepositoryImpl
 from src.restaurants.application.schemas.entry.resaurant_schema_entry import CreateRestaurantSchema
-from src.restaurants.infraestructure.model.restaurant_model import RestaurantModel
 from src.restaurants.application.schemas.response.restaurant_schema_response import BaseRestaurantResponse, RestaurantDetailResponse
 
 
@@ -13,20 +12,20 @@ from src.shared.db.database import get_session
 
 router = APIRouter(prefix="/restaurants", tags=["Restaurants"])
 
-async def get_repository(session: Session = Depends(get_session)) -> RestaurantRepositoryImpl:
+async def get_repository(session: AsyncSession = Depends(get_session)) -> RestaurantRepositoryImpl:
     """Get an instance of the RestaurantRepositoryImpl. """
     return RestaurantRepositoryImpl(db=session)
 
 @router.get("/", response_model=list[BaseRestaurantResponse], status_code=status.HTTP_200_OK)
 async def get_restaurants(repo : RestaurantRepositoryImpl = Depends(get_repository)):
-    try:
-        service = GetAllRestaurantApplicationService(repo)
-        res= await service.execute()
-        return res
-    except ValueError as ve:
-        raise HTTPException(status_code=400, detail=str(ve)) from ve
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e)) from e
+    
+    service = GetAllRestaurantApplicationService(repo)
+    res= await service.execute()
+    if res.is_error():
+        if res.get_error_code() != 500:
+            raise HTTPException(status_code=500, detail="Unexpected error")
+        raise HTTPException(status_code=res.get_error_code(), detail=str(res.get_error_message()))
+    return res.result()
 
 @router.post("/", response_model=RestaurantDetailResponse, status_code=status.HTTP_201_CREATED)
 async def create_restaurant(restaurant: CreateRestaurantSchema, repo: RestaurantRepositoryImpl = Depends(get_repository)):
