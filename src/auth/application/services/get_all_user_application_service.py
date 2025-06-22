@@ -23,6 +23,6 @@ class GetAllUserApplicationService(IApplicationService[UserAllSchemaEntry,Result
         """
 
         users = (await self.repo.get_all(page=data.skip,page_size=data.limit)).value
-        response = [UserAllSchemaeResponse(**u.__dict__) for u in users]
+        response = [UserAllSchemaeResponse(**u.__dict__()) for u in users]
         return Result[List[UserAllSchemaeResponse]].success(response)
 

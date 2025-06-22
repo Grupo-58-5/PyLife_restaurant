@@ -13,6 +13,8 @@ from src.auth.infraestructure.JWT.JWT_auth_adapter import JWTAuthAdapter
 from src.auth.infraestructure.JWT.dependencies.verify_scope import VerifyScope
 from src.auth.infraestructure.repository.user_repository_impl import UserRepositoryImpl
 from src.auth.infraestructure.schemas.entry.change_profile_entry import ChangeProfileEntry
+from src.auth.infraestructure.routes.auth_routes import get_repository
+from src.auth.infraestructure.routes.auth_routes import get_hash_password
 from src.shared.application.ports.auth_handler import AuthHandler
 from src.shared.application.ports.hash_handler import HashHelper
 from src.shared.db.database import get_session
@@ -26,19 +28,6 @@ router = APIRouter(
 )
 
 auth = JWTAuthAdapter()
-
-async def get_repository(session: Session = Depends(get_session)) -> UserRepositoryImpl:
-    """Get an instance of the UserRepositoryImpl. """
-    print("Session utilizado: ",session)
-    return UserRepositoryImpl(db=session)
-
-async def get_hash_password() -> HashHelper:
-    """Get an instance of the BcryptHashAdapter. """
-    return BcryptHashAdapter()
-
-async def get_auth_adapter() -> AuthHandler:
-    """Get an instance of the AuthAdapter. """
-    return JWTAuthAdapter()
 
 @router.get(
     "/get/users",
