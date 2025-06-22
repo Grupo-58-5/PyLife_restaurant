@@ -8,7 +8,7 @@ from src.reservations.infraestructure.models.reservation_model import Reservatio
 
 class UserModel(SQLModel, table=True):
 
-    __tablename__ = "user"
+    __tablename__ = "users"
     id: UUID | None = Field(primary_key=True, default_factory=uuid4,index=True)
     name: str = Field(index=True, nullable=False)
     email: str = Field(index=True, nullable=False, unique=True)
