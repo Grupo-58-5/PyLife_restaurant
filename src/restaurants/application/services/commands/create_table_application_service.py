@@ -19,8 +19,10 @@ class CreateTableApplicationService(IApplicationService[CreateTableSchema, Resul
     async def execute(self, restaurant_id: UUID, data: CreateTableSchema) -> Result[BaseTableResponse]:
         try:
             restaurant = await self.restaurant_repository.get_restaurant_by_id(restaurant_id)
-            if not restaurant:
+            if restaurant is None:
+                # If the restaurant does not exist, return a failure result
                 return Result.failure(
+                    code=404,
                     error=ValueError("Restaurant not found"),
                     messg=f"Restaurant with ID {restaurant_id} does not exist."
                 )
@@ -36,8 +38,9 @@ class CreateTableApplicationService(IApplicationService[CreateTableSchema, Resul
             saved_table = await self.table_repository.create_item_table(table, restaurant_id)
             if saved_table.is_error():
                 return Result.failure(
+                    code=404,
                     error=saved_table.error,
-                    messg=saved_table.messg
+                    messg=f"Error saving table: {saved_table.error.message}" if saved_table.error else "Error saving table"
                 )
             
             saved_table = saved_table.result()
@@ -49,5 +52,10 @@ class CreateTableApplicationService(IApplicationService[CreateTableSchema, Resul
                     location=saved_table.get_location()
                 )
             )
+        except ValueError as ve:
+            if "Table with number" in str(ve):
+                return Result.failure(error=ve, messg=str(ve), code=409)
+            else:
+                return Result.failure(error=ve, messg=str(ve), code=400)
         except Exception as e:
-            return Result.failure(Exception(str(e)), str(e), 500)
+            return Result.failure(error=Exception(str(e)), messg=str(e), code=500)

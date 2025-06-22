@@ -20,3 +20,10 @@ class CreateTableSchema(BaseModel):
     location: TableLocation = Field(description="Table location.")
     
 
+class UpdateTableSchema(BaseModel):
+    """Schema for updating an existing table entry."""
+
+    id: UUID | None = Field(default=None, description="Table ID, required for updates.")
+    table_number: int | None = Field(default=None, gt=0, description="Table number must be a positive integer.")
+    seats: int | None = Field(default=None, gt=0, description="Number of seats at the table.")
+    location: TableLocation | None = Field(default=None, description="Table location.")

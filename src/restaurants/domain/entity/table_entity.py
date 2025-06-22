@@ -47,4 +47,19 @@ class TableEntity:
     
     def get_location(self) -> Optional[str]:
         return self.location.value
+    
+    def set_table_number(self, table_number: int):
+        if table_number <= 0:
+            raise ValueError("Table number must be a positive integer.")
+        self.table_number = table_number
 
+    def set_seats(self, seats: int):
+        if not seats or seats < 2 or seats > 12:
+            raise ValueError("Invalid capacity, must be between 2 and 12")
+        self.seats = seats
+
+    def set_location(self, location: TableLocation):
+        if not isinstance(location, TableLocation):
+            raise ValueError("Invalid location type.")
+        self.location = location
+    

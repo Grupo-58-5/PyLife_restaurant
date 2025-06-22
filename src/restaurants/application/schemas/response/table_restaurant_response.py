@@ -15,4 +15,4 @@ class RestaurantTableResponse(BaseModel):
     """Schema for the response of a restaurant's table."""
     restaurant_id: UUID
     restaurant_name: str
-    table_item: list[BaseTableResponse]
+    tables: list[BaseTableResponse]

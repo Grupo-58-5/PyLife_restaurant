@@ -95,5 +95,10 @@ class CreateRestaurantApplicationService(IApplicationService[CreateRestaurantSch
                         ) for item in restaurant.get_tables()
                     ]
                 ))
+        except ValueError as ve:
+            if "Table with number" in str(ve):
+                return Result.failure(error=ve, messg=str(ve), code=409)
+            else:
+                return Result.failure(error=ve, messg=str(ve), code=400)
         except Exception as e:
-            return Result.failure(Exception(str(e)), str(e), 500)
+            return Result.failure(error=Exception(str(e)), messg=str(e), code=500)

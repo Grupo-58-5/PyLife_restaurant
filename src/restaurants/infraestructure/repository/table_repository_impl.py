@@ -1,15 +1,17 @@
 
 
 
-from typing import List
+from typing import List, Optional
 from uuid import UUID
 from sqlmodel import Session, select
 
 from src.restaurants.domain.entity.table_entity import TableEntity
 from src.restaurants.domain.repository.i_table_repository import ITableRepository
+from src.restaurants.domain.restaurant import Restaurant
 from src.restaurants.infraestructure.mappers.restaurant_mapper import TableMapper
 from src.restaurants.infraestructure.model.table_model import TableModel
 from src.shared.utils.result import Result
+from sqlalchemy.orm import selectinload
 
 
 class TableRepositoryImpl(ITableRepository):
@@ -31,6 +33,8 @@ class TableRepositoryImpl(ITableRepository):
         )    
         table_model = self.db.exec(statement).all()
         return [TableMapper.to_domain(t) for t in table_model] 
+    
+
 
     async def get_table_by_id(self, table_id: UUID) -> Result[TableEntity]:
         try:
@@ -56,7 +60,7 @@ class TableRepositoryImpl(ITableRepository):
         except Exception as e:
             return Result.failure(error=e, messg="Error saving table")
 
-    def update_item_table(self, table_id: UUID, table_data: TableEntity) -> Result[TableEntity]:
+    async def update_item_table(self, table_id: UUID, table_data: TableEntity) -> Result[TableEntity]:
         try:
             statement = select(TableModel).where(TableModel.id == table_id)
             table_model = self.db.exec(statement).one_or_none()
@@ -75,7 +79,7 @@ class TableRepositoryImpl(ITableRepository):
         except Exception as e:
             return Result.failure(error=e, messg="Error updating table")
 
-    def delete_item_table(self, table_id: UUID) -> Result[bool]:
+    async def delete_item_table(self, table_id: UUID) -> Result[bool]:
         try:
             statement = select(TableModel).where(TableModel.id == table_id)
             table_model = self.db.exec(statement).one_or_none()

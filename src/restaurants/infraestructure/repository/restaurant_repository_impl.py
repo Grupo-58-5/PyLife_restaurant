@@ -18,17 +18,24 @@ class RestaurantRepositoryImpl(IRestaurantRepository):
         self.db = db
 
     async def get_restaurant_by_id(self, restaurant_id: str) -> Optional[Restaurant]:
-        statement =  statement = (
-            select(RestaurantModel)
-            .where(RestaurantModel.id == restaurant_id)
-            .options(
-                selectinload(RestaurantModel.menu_items)
-                # selectinload(RestaurantModel.menu_items)
+        try:
+            statement = (
+                select(RestaurantModel)
+                .where(RestaurantModel.id == restaurant_id)
+                .options(
+                    selectinload(RestaurantModel.menu_items),
+                    selectinload(RestaurantModel.tables)
                 )
-        )
-        result = self.db.exec(statement)
-        return RestaurantMapper.to_domain(result.one_or_none()) if result else None
-    
+            )
+            result = self.db.exec(statement)
+            model = result.one_or_none()
+            if model is None:
+                return None
+            return RestaurantMapper.to_domain(model)
+        except Exception:
+            # Si ocurre cualquier error inesperado, retorna None para evitar romper el flujo
+            return None
+
     async def get_restaurant_by_name(self, name: str) -> List[Restaurant]:
         statement = select(RestaurantModel).where(RestaurantModel.name == name)
         results = self.db.exec(statement)
