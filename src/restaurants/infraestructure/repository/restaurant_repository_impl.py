@@ -25,8 +25,8 @@ class RestaurantRepositoryImpl(IRestaurantRepository):
                     selectinload(RestaurantModel.tables)
                 )
             )
-            result = await self.db.exec(statement)
-            model = result.one_or_none()
+            result = await self.db.execute(statement)  # ¡Usa execute, no exec!
+            model = result.scalars().one_or_none()
             if model is None:
                 return None
             return RestaurantMapper.to_domain(model)
@@ -36,18 +36,19 @@ class RestaurantRepositoryImpl(IRestaurantRepository):
 
     async def get_restaurant_by_name(self, name: str) -> List[Restaurant]:
         statement = select(RestaurantModel).where(RestaurantModel.name == name)
-        results = await self.db.exec(statement)
-        restaurants = results.all()
+        results = await self.db.execute(statement)
+        restaurants = results.scalars().all()
         return [RestaurantMapper.to_domain(r) for r in restaurants]
 
     async def get_all_restaurants(self) -> List[Restaurant]:
         statement = select(RestaurantModel)
-        result: Optional[List[RestaurantModel]] = (await self.db.exec(statement)).all()
+        result = await self.db.execute(statement)  # Usa execute
+        restaurants_models = result.scalars().all()
 
-        print("Lista de restaurants: ",result)
-        if result is None:
+        print("Lista de restaurants: ", restaurants_models)
+        if restaurants_models is None:
             return []
-        restaurants: List[Restaurant] = [RestaurantMapper.to_domain(r) for r in result]
+        restaurants: List[Restaurant] = [RestaurantMapper.to_domain(r) for r in restaurants_models]
         return restaurants
 
     async def create_restaurant(self, restaurant: Restaurant) -> Result[Restaurant]:
@@ -55,13 +56,13 @@ class RestaurantRepositoryImpl(IRestaurantRepository):
             restaurant_model = RestaurantMapper.to_model(restaurant)
             self.db.add(restaurant_model)
             await self.db.commit()
-            await self.db.refresh(restaurant_model)
-            _ = restaurant_model.menu_items  # Load menu items if any
-            _ = restaurant_model.tables
+            
+            await self.db.refresh(restaurant_model, attribute_names=["menu_items", "tables"])
+            
             return Result.success(RestaurantMapper.to_domain(restaurant_model))
         except Exception as e:
             await self.db.rollback()
-            return Result.failure(error=e, messg=f"Error creating restaurant: {str(e)}")   
+            return Result.failure(error=e, messg=f"Error creating restaurant: {str(e)}")
         
     async def update_restaurant(self, restaurant: Restaurant) -> Restaurant:
         pass
