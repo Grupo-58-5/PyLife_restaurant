@@ -42,9 +42,13 @@ class RestaurantRepositoryImpl(IRestaurantRepository):
 
     async def get_all_restaurants(self) -> List[Restaurant]:
         statement = select(RestaurantModel)
-        results = await self.db.exec(statement)
-        restaurants =  results.all()
-        return [RestaurantMapper.to_domain(r) for r in restaurants]
+        result: Optional[List[RestaurantModel]] = (await self.db.exec(statement)).all()
+
+        print("Lista de restaurants: ",result)
+        if result is None:
+            return []
+        restaurants: List[Restaurant] = [RestaurantMapper.to_domain(r) for r in result]
+        return restaurants
 
     async def create_restaurant(self, restaurant: Restaurant) -> Result[Restaurant]:
         try:

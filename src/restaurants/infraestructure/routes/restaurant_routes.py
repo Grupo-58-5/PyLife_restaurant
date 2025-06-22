@@ -19,13 +19,12 @@ async def get_repository(session: AsyncSession = Depends(get_session)) -> Restau
 @router.get("/", response_model=list[BaseRestaurantResponse], status_code=status.HTTP_200_OK)
 async def get_restaurants(repo : RestaurantRepositoryImpl = Depends(get_repository)):
     
-    service = GetAllRestaurantApplicationService(repo)
-    res= await service.execute()
-    if res.is_error():
-        if res.get_error_code() != 500:
-            raise HTTPException(status_code=500, detail="Unexpected error")
-        raise HTTPException(status_code=res.get_error_code(), detail=str(res.get_error_message()))
-    return res.result()
+    try:
+        service = GetAllRestaurantApplicationService(repo)
+        res= await service.execute()
+        return res
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 @router.post("/", response_model=RestaurantDetailResponse, status_code=status.HTTP_201_CREATED)
 async def create_restaurant(restaurant: CreateRestaurantSchema, repo: RestaurantRepositoryImpl = Depends(get_repository)):

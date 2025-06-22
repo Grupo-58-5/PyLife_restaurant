@@ -24,10 +24,8 @@ class RestaurantMapper():
             schedule = RestaurantSchedule.create(
                 opening_time=restaurant_model.opening_time,
                 closing_time=restaurant_model.closing_time
-            ),
-            menu = [MenuMapper.to_domain(item) for item in restaurant_model.menu_items] if restaurant_model.menu_items else [],
-            tables= [TableMapper.to_domain(item) for item in restaurant_model.tables] if restaurant_model.tables else []       
-        ) 
+            )
+        )
 
     @staticmethod
     def to_model(data: Restaurant) -> RestaurantModel:
@@ -37,8 +35,7 @@ class RestaurantMapper():
             location = data.get_address(),
             opening_time = data.get_opening(),
             closing_time = data.get_closing(),
-            menu_items = [MenuMapper.to_model(item) for item in data.get_menu()] if data.get_menu() else [],
-            tables=[TableMapper.to_model(item) for item in data.get_tables()] if data.get_tables() else [],
+            tables=[TableMapper.to_model(item) for item in data.get_tables()] if data.get_tables() else []
         )   
     
     def table_to_domain(self, table_model: TableModel) -> TableEntity:
@@ -68,7 +65,7 @@ class MenuMapper():
             id=uuid4(),
             name=data.get_name(),
             description=data.get_description(),
-            category=data.get_category(),
+            category=data.get_category()
         )
     
     @staticmethod
