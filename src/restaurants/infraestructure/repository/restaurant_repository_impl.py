@@ -25,7 +25,7 @@ class RestaurantRepositoryImpl(IRestaurantRepository):
                     selectinload(RestaurantModel.tables)
                 )
             )
-            result = await self.db.execute(statement)  # ¡Usa execute, no exec!
+            result = await self.db.exec(statement)  # ¡Usa execute, no exec!
             model = result.scalars().one_or_none()
             if model is None:
                 return None
@@ -36,13 +36,13 @@ class RestaurantRepositoryImpl(IRestaurantRepository):
 
     async def get_restaurant_by_name(self, name: str) -> List[Restaurant]:
         statement = select(RestaurantModel).where(RestaurantModel.name == name)
-        results = await self.db.execute(statement)
+        results = await self.db.exec(statement)
         restaurants = results.scalars().all()
         return [RestaurantMapper.to_domain(r) for r in restaurants]
 
     async def get_all_restaurants(self) -> List[Restaurant]:
         statement = select(RestaurantModel)
-        result = await self.db.execute(statement)  # Usa execute
+        result = await self.db.exec(statement)  # Usa execute
         restaurants_models = result.scalars().all()
 
         print("Lista de restaurants: ", restaurants_models)
