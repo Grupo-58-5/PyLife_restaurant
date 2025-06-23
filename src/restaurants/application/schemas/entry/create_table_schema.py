@@ -16,7 +16,7 @@ class CreateTableSchema(BaseModel):
     """Schema for creating a new table entry."""
 
     table_number: int = Field(..., gt=0, description=" Table number must be a positive integer.")
-    seats: int = Field(..., gt=0, description="Number of seats at the table.")
+    seats: int = Field(..., gt=0, ge=2, le=12,description="Number of seats at the table.")
     location: TableLocation = Field(description="Table location.")
     
 
@@ -25,5 +25,5 @@ class UpdateTableSchema(BaseModel):
 
     id: UUID | None = Field(default=None, description="Table ID, required for updates.")
     table_number: int | None = Field(default=None, gt=0, description="Table number must be a positive integer.")
-    seats: int | None = Field(default=None, gt=0, description="Number of seats at the table.")
+    seats: int | None = Field(default=None, gt=0, ge=2, le=12, description="Number of seats at the table.")
     location: TableLocation | None = Field(default=None, description="Table location.")

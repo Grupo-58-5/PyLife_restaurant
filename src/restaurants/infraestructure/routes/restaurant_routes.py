@@ -41,7 +41,7 @@ async def get_restaurants(info: Annotated[Result[dict],Depends(auth.decode)], re
     status_code=status.HTTP_201_CREATED,
     dependencies=[Depends(VerifyScope(["admin:read","admin:write"],auth))]
 )
-async def create_restaurant(restaurant: CreateRestaurantSchema, info: Annotated[Result[dict],Depends(auth.decode)], repo: RestaurantRepositoryImpl = Depends(get_repository)):
+async def create_restaurant(info: Annotated[Result[dict],Depends(auth.decode)], restaurant: CreateRestaurantSchema, repo: RestaurantRepositoryImpl = Depends(get_repository)):
     """
     Create a new restaurant endpoint.
     """
