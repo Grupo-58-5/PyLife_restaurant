@@ -4,18 +4,20 @@ from typing import List
 from uuid import UUID
 
 from src.restaurants.domain.entity.menu_entity import MenuEntity
+from src.restaurants.domain.entity.table_entity import TableEntity
 from src.restaurants.domain.vo.restaurant_address import RestaurantAddress
 from src.restaurants.domain.vo.restaurant_name import RestaurantName
 from src.restaurants.domain.vo.restaurant_schedule import RestaurantSchedule
 
 
 class Restaurant:
-    def __init__(self, id: UUID, name: RestaurantName, address: RestaurantAddress, schedule: RestaurantSchedule, menu: List[MenuEntity] | None = None):
+    def __init__(self, id: UUID, name: RestaurantName, address: RestaurantAddress, schedule: RestaurantSchedule, menu: List[MenuEntity] | None = None, tables: List[TableEntity] | None = None):
         self.id = id
         self.name = name
         self.address = address
         self.schedule = schedule
         self.menu = menu if menu is not None else []
+        self.tables = tables if tables is not None else []
 
 
     def __repr__(self):
@@ -27,7 +29,8 @@ class Restaurant:
         return self.id == other.id
     
     @classmethod
-    def create(cls, id: UUID, name: RestaurantName, address: RestaurantAddress, schedule: RestaurantSchedule, menu: List[MenuEntity] | None = None) -> "Restaurant":
+    def create(cls, id: UUID, name: RestaurantName, address: RestaurantAddress, schedule: RestaurantSchedule, menu: List[MenuEntity] | None = None, tables: List[TableEntity] | None = None) -> "Restaurant":
+
         """Factory method to create a Restaurant instance."""
         return cls(id, name, address, schedule, menu)
     
@@ -48,6 +51,9 @@ class Restaurant:
     
     def get_menu(self) -> List[MenuEntity]:
         return self.menu
+    
+    def get_tables(self) -> List[TableEntity]:
+        return self.tables
     
     def add_menu_item(self, menu_item: MenuEntity) -> None:
         """Adds a menu item to the restaurant's menu."""
@@ -77,3 +83,31 @@ class Restaurant:
             new_names.add(name_clean)
 
         self.menu.extend(menu_items)
+
+    def add_table(self, table: TableEntity) -> None:
+        """Adds a table to the restaurant."""
+        if not isinstance(table, TableEntity):
+            raise ValueError("table must be an instance of TableEntity")
+        if self.tables and len(self.tables) > 0:
+            # Check if a table with the same number already exists
+            new_number = table.get_table_number()
+            existing_numbers = [t.get_table_number() for t in self.tables]
+            if new_number in existing_numbers:
+                raise ValueError(f"Table with number {new_number} already exists in the restaurant")
+            
+        if self.tables is None:
+            self.tables = []
+        self.tables.append(table)
+    
+    def add_tables_bulk(self, tables: List[TableEntity]) -> None:
+        """Adds a list of tables to the restaurant, validating duplicates after building the list."""
+        existing_numbers = {table.get_table_number() for table in self.tables}
+        new_numbers = set()
+
+        for table in tables:
+            table_number = table.get_table_number()
+            if table_number in existing_numbers or table_number in new_numbers:
+                raise ValueError(f"Duplicate table number found: {table_number}")
+            new_numbers.add(table_number)
+
+        self.tables.extend(tables)

@@ -1,21 +1,29 @@
 from enum import Enum
 from uuid import UUID
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, Field, field_validator, validator
 from datetime import time
+from enum import Enum
 
-class TableLocation(str, Enum):
-    INSIDE = "Inside"
+class TableLocation(Enum):
+    INDOOR = "Indoor"
+    OUTDOOR = "Outdoor"
+    WINDOW = "Window"
     TERRACE = "Terrace"
+    PRIVATE = "Private"
+    BAR = "Bar"
 
 class CreateTableSchema(BaseModel):
     """Schema for creating a new table entry."""
 
     table_number: int = Field(..., gt=0, description=" Table number must be a positive integer.")
-    seats: int = Field(..., gt=0, description="Number of seats at the table.")
-    location: TableLocation = Field(default=TableLocation.INSIDE, description="Table location.")
+    seats: int = Field(..., gt=0, ge=2, le=12,description="Number of seats at the table.")
+    location: TableLocation = Field(description="Table location.")
+    
 
-    @classmethod
-    def validate_table(cls, table_data: "CreateTableSchema"):
-        """Validate the capacity of people"""
-        if table_data.seats >= 2 and table_data.seats <= 12:
-            raise ValueError("Number of people out of range.")
+class UpdateTableSchema(BaseModel):
+    """Schema for updating an existing table entry."""
+
+    id: UUID | None = Field(default=None, description="Table ID, required for updates.")
+    table_number: int | None = Field(default=None, gt=0, description="Table number must be a positive integer.")
+    seats: int | None = Field(default=None, gt=0, ge=2, le=12, description="Number of seats at the table.")
+    location: TableLocation | None = Field(default=None, description="Table location.")
