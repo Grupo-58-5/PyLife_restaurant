@@ -1,3 +1,4 @@
+from uuid import UUID
 from pydantic import BaseModel, Field
 from datetime import datetime
 from enum import Enum
@@ -9,14 +10,20 @@ class ReservationStatus(str, Enum):
     CANCELED = "canceled"
     COMPLETED = "completed"
 
+class PreOrderSchemaResponse(BaseModel):
+    id: UUID
+    name: str
+
 class ReservationSchemaResponse(BaseModel):
     
-    client_id: int = Field(..., gt=0, description="Client ID must be a positive integer.")
-    restaurant_id: int = Field(..., gt=0, description="Restaurant ID must be a positive integer.")
-    table_id: int = Field(..., gt=0, description="Table ID must be a positive integer.")
+    reservation_id: UUID  = Field(..., description="Reservation ID must be a UUID.")
+    client_id: UUID = Field(..., description="Client ID must be a UUID.")
+    restaurant_id: UUID = Field(..., description="Restaurant ID must be a UUID.")
+    table_id: UUID = Field(..., description="Table ID must be a UUID.")
     start_time: datetime = Field(..., description="Start time of the reservation.")
     finish_time: datetime = Field(..., description="Finish time of the reservation.")
     status: ReservationStatus = Field(..., description="Reservation status.")
-
+    pre_order: Optional[List[PreOrderSchemaResponse]] = Field(default=None, description="List of the plates pre-order in the reservation")
     class Config:
-        orm_mode = True
+        from_attributes = True
+

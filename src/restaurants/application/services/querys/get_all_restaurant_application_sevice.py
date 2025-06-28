@@ -16,21 +16,12 @@ class GetAllRestaurantApplicationService(IApplicationService[None, Result[List[B
 
     async def execute( self ) -> Result[List[BaseRestaurantResponse]]:
         try:
-            restaurants = await self.repository.get_all_restaurants()
-            return Result[List[BaseRestaurantResponse]].success(
-                [BaseRestaurantResponse(
-                    id=r.get_id(), 
-                    name=r.get_name(), 
-                    address=r.get_address(), 
-                    opening_hour=r.get_opening(), 
-                    closing_hour=r.get_closing()) for r in restaurants]
+            restaurant = await self.repository.get_all_restaurants()
+            
+            response = Result[List[BaseRestaurantResponse]].success(
+                [BaseRestaurantResponse(id=r.get_id(), name=r.get_name(), address=r.get_address(), opening_hour=r.get_opening(), closing_hour=r.get_closing()) for r in restaurant]
             )
-        except ValueError as ve:
-            return Result[List[BaseRestaurantResponse]].failure(
-                exception=ve, 
-                message=str(ve), 
-                status_code=400
-            )
+            return response
         except Exception as e:
             return Result[List[BaseRestaurantResponse]].failure(
                 exception=str(e), 

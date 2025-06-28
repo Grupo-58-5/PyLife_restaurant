@@ -1,10 +1,8 @@
-
-
-
 from typing import List
 from uuid import UUID
 from sqlmodel.ext.asyncio.session import AsyncSession
 from sqlmodel import select
+from sqlalchemy.orm import selectinload
 from src.restaurants.domain.entity.menu_entity import MenuEntity
 from src.restaurants.domain.repository.i_menu_repository import IMenuRepository
 from src.restaurants.infraestructure.mappers.restaurant_mapper import MenuMapper
@@ -28,12 +26,12 @@ class MenuRepositoryImpl(IMenuRepository):
         Retrieves the menu for a specific restaurant.
         """
         statement = select(MenuModel).where(MenuModel.restaurant_id == restaurant_id)
-        menu_model = await self.db.exec(statement).all()
+        menu_model = (await self.db.exec(statement)).all()
         if not menu_model:
             return []
         ## missing mapper
-        return [MenuEntity(id=m.id, name=m.name, description=m.description, category=m.category) for m in menu_model]
-    
+        return [MenuMapper.to_domain(m) for m in menu_model]
+
     async def create_item_menu(self, menu_data: MenuEntity, restaurant_id: UUID) -> MenuEntity:
         """
         Creates a new menu item for a restaurant.

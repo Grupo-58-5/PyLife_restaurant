@@ -38,7 +38,14 @@ class TableRepositoryImpl(ITableRepository):
 
     async def get_table_by_id(self, table_id: UUID) -> Result[TableEntity]:
         try:
-            statement = select(TableModel).where(TableModel.id == table_id)
+            statement = (
+                select(TableModel).
+                where(TableModel.id == table_id)
+                .options(
+                    selectinload(TableModel.reservations),
+                    selectinload(TableModel.restaurant)
+                )
+            )
             table_model = (await self.db.exec(statement)).one_or_none()
             if not table_model:
                 return Result.failure(

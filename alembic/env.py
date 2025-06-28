@@ -4,15 +4,17 @@ import os
 
 from sqlalchemy import engine_from_config
 from sqlalchemy import pool
-from sqlmodel import SQLModel
 
 from alembic import context
+from sqlmodel import SQLModel
 
 from src.restaurants.infraestructure.model.restaurant_model import RestaurantModel
 from src.auth.infraestructure.model.user_model import UserModel
 from src.restaurants.infraestructure.model.menu_model import MenuModel
 from src.restaurants.infraestructure.model.table_model import TableModel
 
+from src.reservations.infraestructure.models.reservation_model import ReservationModel
+from src.reservations.infraestructure.models.pre_order_model import PreOrder
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
