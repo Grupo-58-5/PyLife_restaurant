@@ -5,7 +5,7 @@ from typing import List
 from uuid import UUID
 from pydantic import BaseModel
 
-from src.restaurants.application.schemas.response.menu_item_response import MenuItem
+from src.restaurants.application.schemas.response.menu_item_response import MenuItemBase
 
 
 class RestaurantMenuResponse(BaseModel):
@@ -14,4 +14,4 @@ class RestaurantMenuResponse(BaseModel):
 
     restaurant_id: UUID
     restaurant_name: str
-    menu_items: List[MenuItem]
+    menu_items: List[MenuItemBase]

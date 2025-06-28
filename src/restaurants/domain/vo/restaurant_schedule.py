@@ -14,9 +14,9 @@ class RestaurantSchedule:
     def validate(self, opening_time: time, closing_time: time) -> None:
         """Validates the restaurant schedule."""
         if opening_time >= closing_time:
-            raise ValueError("Closing time must be after opening time")
+            raise ValueError("Closing hour must be greather than opening hour")
         if not (0 <= opening_time.hour < 24 and 0 <= closing_time.hour < 24):
-            raise ValueError("Opening and closing times must be valid times of the day")
+            raise ValueError("Opening and closing hours must be valid times of the day")
     
     @classmethod
     def create(cls, opening_time: time, closing_time: time) -> "RestaurantSchedule":

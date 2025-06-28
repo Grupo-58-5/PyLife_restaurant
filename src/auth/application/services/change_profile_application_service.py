@@ -1,6 +1,9 @@
 from src.auth.application.schemas.entry.change_profile_schema_entry import ChangeProfileSchemaEntry
 from src.auth.domain.repository.user_repository_interface import IUserRepository
 from src.auth.domain.user import User
+from src.auth.domain.value_object.user_email import UserEmail
+from src.auth.domain.value_object.user_name import UserName
+from src.auth.domain.value_object.user_password import UserPassword
 from src.shared.application.ports.hash_handler import HashHelper
 from src.shared.utils.i_application_service import IApplicationService
 from src.shared.utils.result import Result
@@ -25,11 +28,14 @@ class ChangeProfileAplicationService(IApplicationService[ChangeProfileSchemaEntr
         user = find_user_result.value
 
         if data.email is not None:
-            user.change_email(data.email)
+            verify_email = await self.repo.verify_email(data.email)
+            if(verify_email.value == True):
+                return Result[str].failure(ValueError,'email already registered',409)
+            user.change_email(UserEmail.create(data.email))
         if data.password is not None:
-            user.change_password(await self.hash.get_password_hashed(data.password))
+            user.change_password(UserPassword.create(await self.hash.get_password_hashed(data.password)))
         if data.name is not None:
-            user.change_name(data.name)
+            user.change_name(UserName.create(data.name))
 
         print("Uusario para actualizar: ",user)
 

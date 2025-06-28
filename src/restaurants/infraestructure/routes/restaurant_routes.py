@@ -1,8 +1,12 @@
-from uuid import uuid4
+from typing import Annotated
+from uuid import uuid4, UUID
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlmodel import Session
+from src.auth.infraestructure.JWT.JWT_auth_adapter import JWTAuthAdapter
+from src.auth.infraestructure.JWT.dependencies.verify_scope import VerifyScope
 from src.restaurants.application.services.commands.create_restaurant_application_service import CreateRestaurantApplicationService
 from src.restaurants.application.services.querys.get_all_restaurant_application_sevice import GetAllRestaurantApplicationService
+from src.restaurants.application.services.querys.get_restaurant_application_service import GetRestaurantApplicationService
 from src.restaurants.infraestructure.repository.restaurant_repository_impl import RestaurantRepositoryImpl
 from src.restaurants.application.schemas.entry.resaurant_schema_entry import CreateRestaurantSchema
 from src.restaurants.infraestructure.model.restaurant_model import RestaurantModel
@@ -12,6 +16,8 @@ from src.restaurants.application.schemas.response.restaurant_schema_response imp
 from src.shared.db.database import get_session
 
 router = APIRouter(prefix="/restaurants", tags=["Restaurants"])
+auth = JWTAuthAdapter()
+
 
 async def get_repository(session: Session = Depends(get_session)) -> RestaurantRepositoryImpl:
     """Get an instance of the RestaurantRepositoryImpl. """
@@ -19,22 +25,52 @@ async def get_repository(session: Session = Depends(get_session)) -> RestaurantR
 
 @router.get("/", response_model=list[BaseRestaurantResponse], status_code=status.HTTP_200_OK)
 async def get_restaurants(repo : RestaurantRepositoryImpl = Depends(get_repository)):
-    try:
-        service = GetAllRestaurantApplicationService(repo)
-        res= await service.execute()
-        return res
-    except Exception as e:
-        raise HTTPException(status_code=400, detail=str(e)) from e
+    
+    service = GetAllRestaurantApplicationService(repo)
+    res= await service.execute()
+    if res.is_error():
+        if res.get_error_code() != 500:
+            raise HTTPException(status_code=res.get_error_code(), detail=res.get_error_message())
+        else:
+            raise HTTPException(status_code=500, detail="Unexpected error")
+    
+    return res.result()
 
-@router.post("/", response_model=RestaurantDetailResponse, status_code=status.HTTP_201_CREATED)
-async def create_restaurant(restaurant: CreateRestaurantSchema, repo: RestaurantRepositoryImpl = Depends(get_repository)):
+@router.get("/{restaurant_id}", response_model=RestaurantDetailResponse, status_code=status.HTTP_200_OK)
+async def get_restaurant_by_id(restaurant_id: UUID, repo : RestaurantRepositoryImpl = Depends(get_repository)):
+    
+    service = GetRestaurantApplicationService(repo)
+    res= await service.execute(restaurant_id)
+    if res.is_error():
+        if res.get_error_code() != 500:
+            raise HTTPException(status_code=res.get_error_code(), detail=res.get_error_message())
+        else:
+            raise HTTPException(status_code=500, detail="Unexpected error")
+    
+    return res.result()
+
+@router.post("/", 
+            response_model=RestaurantDetailResponse, 
+            status_code=status.HTTP_201_CREATED,
+            dependencies=[Depends(VerifyScope(["admin:read"], JWTAuthAdapter()))]
+            )
+
+async def create_restaurant(
+        info: Annotated[dict,Depends(auth.decode)],
+        restaurant: CreateRestaurantSchema, 
+        repo: RestaurantRepositoryImpl = Depends(get_repository)
+    ):
     """
     Create a new restaurant endpoint.
     """
-    try:
-        service = CreateRestaurantApplicationService(repo)
-        res = await service.execute(restaurant)
-        return res
-    except Exception as e:
-        raise HTTPException(status_code=400, detail=str(e)) from e
+    if info.is_error():
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=info.get_error_message())
     
+    service = CreateRestaurantApplicationService(repo)
+    res = await service.execute(restaurant)
+    if res.is_error():
+        if res.get_error_code() == 400:
+            raise HTTPException(status_code=400, detail=str(res.get_error_message()))
+        else:
+            raise HTTPException(status_code=500, detail="Unexpected error")
+    return res.result()        
