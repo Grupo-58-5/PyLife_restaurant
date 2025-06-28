@@ -33,7 +33,7 @@ class GetAllRestaurantApplicationService(IApplicationService[None, Result[List[B
             )
         except Exception as e:
             return Result[List[BaseRestaurantResponse]].failure(
-                exception=e, 
+                exception=str(e), 
                 message=f"Error retrieving restaurants: {str(e)}", 
                 status_code=500
             )

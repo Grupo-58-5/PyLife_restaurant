@@ -32,6 +32,7 @@ class CreateMenuItemApplicationService(IApplicationService[CreateMenuItemSchema,
                 description=data.description,
                 category=data.category
             )
+            
             restaurant.add_menu_item(item)
             saved_item = await self.menu_repository.create_item_menu(item, data.restaurant_id)
             if saved_item.is_error():

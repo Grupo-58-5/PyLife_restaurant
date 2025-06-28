@@ -3,8 +3,16 @@ from uuid import UUID
 from pydantic import BaseModel
 from src.restaurants.application.schemas.entry.create_table_schema import TableLocation
 
-class TableRestaurantResponse(BaseModel):
+class BaseTableResponse(BaseModel):
+
     id: UUID
     table_number: int
     seats: int
-    location: TableLocation
+    location: str | TableLocation
+    
+class RestaurantTableResponse(BaseModel):
+
+    """Schema for the response of a restaurant's table."""
+    restaurant_id: UUID
+    restaurant_name: str
+    tables: list[BaseTableResponse]
