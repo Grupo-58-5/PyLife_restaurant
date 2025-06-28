@@ -34,53 +34,20 @@ class Restaurant:
         """Factory method to create a Restaurant instance."""
         return cls(id, name, address, schedule, menu)
     
-    def validate(self) -> None:
-        """Validates the restaurant."""
-        if not isinstance(self.name, RestaurantName):
-            raise ValueError("name must be an instance of RestaurantName")
-        if not isinstance(self.address, RestaurantAddress):
-            raise ValueError("address must be an instance of RestaurantAddress")
-        if not isinstance(self.schedule, RestaurantSchedule):
-            raise ValueError("schedule must be an instance of RestaurantSchedule")
-        for item in self.menu:
-            if not isinstance(item, MenuEntity):
-                raise ValueError("All menu items must be instances of MenuEntity")
-    
-    @name.setter
-    def name(self, value: RestaurantName) -> None:
-        """Sets the name of the restaurant."""
-        if not isinstance(value, RestaurantName):
-            raise ValueError("name must be an instance of RestaurantName")
-        self.name = value
-    
-    @address.setter
-    def address(self, value: RestaurantAddress) -> None:
-        """Sets the address of the restaurant."""
-        if not isinstance(value, RestaurantAddress):
-            raise ValueError("address must be an instance of RestaurantAddress")
-        self.address = value
-
-    @schedule.setter
-    def schedule(self, value: RestaurantSchedule) -> None:
-        """Sets the schedule of the restaurant."""
-        if not isinstance(value, RestaurantSchedule):
-            raise ValueError("schedule must be an instance of RestaurantSchedule")
-        self.schedule = value
-    
     def get_id(self) -> UUID:
         return self.id
     
     def get_name(self) -> str:
-        return self.name.name
+        return self.name.get_name()
     
     def get_address(self) -> str:
-        return self.address.address
+        return self.address.get_address()
     
     def get_opening(self) -> str:
-        return self.schedule.opening_time
+        return self.schedule.opening_time()
     
     def get_closing(self) -> str:
-        return self.schedule.closing_time
+        return self.schedule.closing_time()
     
     def get_menu(self) -> List[MenuEntity]:
         return self.menu
