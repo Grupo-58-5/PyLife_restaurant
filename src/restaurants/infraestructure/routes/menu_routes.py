@@ -35,11 +35,11 @@ router = APIRouter(prefix="/menu", tags=["Menu"])
 auth: Final = JWTAuthAdapter()
 
 @router.get("/{restaurant_id}", summary="Get Menu by Restaurant ID",  response_model=RestaurantMenuResponse, status_code=status.HTTP_200_OK)
-async def get_menu(restaurant_id: UUID, restaurant_repo : RestaurantRepositoryImpl = Depends(get_restaurant_repository), menu_repo : MenuRepositoryImpl = Depends(get_menu_repository) ):
+async def get_menu(restaurant_id: UUID, restaurant_repo : RestaurantRepositoryImpl = Depends(get_restaurant_repository) ):
     """
     Retrieve the menu for a specific restaurant.
     """
-    service = GetAllMenuApplicationService(restaurant_repo, menu_repo)
+    service = GetAllMenuApplicationService(restaurant_repo)
     schema = GetMenuEntrySchema(restaurant_id=restaurant_id)
     res = await service.execute(schema)
     if res.is_succes():

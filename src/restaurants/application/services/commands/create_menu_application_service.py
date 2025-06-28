@@ -26,8 +26,10 @@ class CreateMenuItemApplicationService(IApplicationService[CreateMenuItemSchema,
                     messg=f"Restaurant with ID {data.restaurant_id} does not exist."
                 )
             
+            id_menu = uuid4()
+            
             item = MenuEntity.create(
-                id= uuid4(),
+                id= id_menu,
                 name=data.name,
                 description=data.description,
                 category=data.category

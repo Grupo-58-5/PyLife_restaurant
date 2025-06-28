@@ -21,17 +21,6 @@ class MenuRepositoryImpl(IMenuRepository):
         super().__init__()
         self.db = db
 
-    async def get_menu(self, restaurant_id: UUID) -> List[MenuEntity]:
-        """
-        Retrieves the menu for a specific restaurant.
-        """
-        statement = select(MenuModel).where(MenuModel.restaurant_id == restaurant_id)
-        menu_model = (await self.db.exec(statement)).all()
-        if not menu_model:
-            return []
-        ## missing mapper
-        return [MenuMapper.to_domain(m) for m in menu_model]
-
     async def create_item_menu(self, menu_data: MenuEntity, restaurant_id: UUID) -> MenuEntity:
         """
         Creates a new menu item for a restaurant.
