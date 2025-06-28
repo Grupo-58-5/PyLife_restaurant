@@ -57,8 +57,11 @@ async def create_menu_item(restaurant_id: UUID, menu: CreateMenuItemSchema, rest
     res = await service.execute(menu)
     if res.is_succes():
         return res.result()
-    else:
-        raise HTTPException(status_code=400, detail=res.get_error_message())
+    if res.is_error():
+        if res.get_error_code() != 500:
+            raise HTTPException(status_code= res.get_error_code(), detail=str(res.get_error_message()))
+        else:
+            raise HTTPException(status_code=500, detail="Unexpected error")
     
 
 @router.delete("/{restaurant_id}", status_code=status.HTTP_200_OK, response_model=MenuItemResponse, summary="Delete Menu Item")    

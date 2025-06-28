@@ -56,6 +56,19 @@ class CreateMenuItemApplicationService(IApplicationService[CreateMenuItemSchema,
                     category=saved_item.get_category()
                 )
             ))
+        except ValueError as ve:
+            if 'Menu item with the same name already exists' in str(ve):
+                return Result.failure(
+                    code=409,
+                    error=ve,
+                    messg=str(ve)
+                )
+            else:
+                return Result.failure(
+                    code=400,
+                    error=ve,
+                    messg=str(ve)
+                )
         except Exception as e:
             print(e)
             return Result.failure(
