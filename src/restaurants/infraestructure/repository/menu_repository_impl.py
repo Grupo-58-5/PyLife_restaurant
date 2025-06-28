@@ -59,30 +59,14 @@ class MenuRepositoryImpl(IMenuRepository):
     def update_item_menu(self, menu_id: UUID, menu_data: MenuEntity) -> MenuEntity:
         pass
 
-    def delete_item_menu(self, menu_id: UUID) -> None:
-        pass
-
-    async def get_menu_resturant(self, menu_id: UUID, restaurant_id: UUID) -> Result[MenuEntity]:
-        """
-        Verify that a menu belong to a specific restaurant and get the menu.
-        """
+    async def delete_item_menu(self, menu_id: UUID) -> Result[MenuEntity]:
         try:
-            statement = (
-                select(MenuModel)
-                .where(
-                    MenuModel.id == menu_id,
-                    MenuModel.restaurant_id == restaurant_id
-                )
-                .options(
-                    selectinload(MenuModel.restaurant),
-                )
-            )
-            result = (await self.db.exec(statement)).one_or_none()
-            if result is None:
-                return Result[MenuEntity].failure(Exception,f'Dish #{menu_id} does not belong to the restaurant menu)',400)
-            return Result.success(MenuMapper.to_domain(result))
-        except Exception as e:
-            return Result.failure(
-                error=e,
-                messg=f"Error searching for menu: {str(e)}"
-            )
+            menu_model = self.db.get(MenuModel, menu_id)
+            self.db.delete(menu_model)
+            self.db.commit()
+            return Result[MenuEntity].success(MenuMapper.to_domain(menu_model))
+        except BaseException as e:
+            print("Error: ",e)
+            self.db.rollback()
+            return Result[MenuEntity].failure(error=e,messg='DELETE failed')
+        

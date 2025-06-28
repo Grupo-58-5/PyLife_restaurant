@@ -51,7 +51,6 @@ async def create_restaurant(info: Annotated[Result[dict],Depends(auth.decode)], 
     res = await service.execute(restaurant)
     if res.is_error():
         if res.get_error_code() == 400:
-            print('csm')
             raise HTTPException(status_code=400, detail=str(res.get_error_message()))
         else:
             raise HTTPException(status_code=500, detail="Unexpected error")
