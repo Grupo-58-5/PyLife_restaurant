@@ -3,12 +3,13 @@ from typing import TYPE_CHECKING, Optional
 from uuid import UUID, uuid4
 from sqlmodel import Field, Relationship, SQLModel
 
-#from src.restaurants.infraestructure.model.restaurant_model import RestaurantModel
+from src.reservations.infraestructure.models.pre_order_model import PreOrder
 
 if TYPE_CHECKING:
     from src.restaurants.infraestructure.model.restaurant_model import RestaurantModel
 
-
+if TYPE_CHECKING:
+    from src.reservations.infraestructure.models.reservation_model import ReservationModel
 
 class MenuModel(SQLModel, table=True):
 
@@ -25,3 +26,8 @@ class MenuModel(SQLModel, table=True):
 
     restaurant_id: UUID = Field(foreign_key="restaurants.id", nullable=False)
     restaurant: Optional["RestaurantModel"] = Relationship(back_populates="menu_items")
+
+    reservations: list["ReservationModel"] | None = Relationship(
+        back_populates="dishes",
+        link_model=PreOrder
+    )

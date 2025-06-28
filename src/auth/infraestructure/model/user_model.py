@@ -14,7 +14,8 @@ class UserModel(SQLModel, table=True):
     email: str = Field(index=True, nullable=False, unique=True)
     password: str = Field(index=True, nullable=False)
     role: Roles = Field(default=Roles.CLIENT,nullable=False)
-   #reservations: List[ReservationModel] | None = Field(Relationship(back_populates="client"),default=None)
+
+    reservations: List[ReservationModel] | None = Relationship(back_populates="client")
 
     @field_validator('email')
     def valid_email(cls,email: str) -> bool:

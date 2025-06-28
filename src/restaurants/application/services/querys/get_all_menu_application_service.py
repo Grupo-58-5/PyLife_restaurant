@@ -15,10 +15,9 @@ class GetAllMenuApplicationService(IApplicationService[GetMenuEntrySchema, Resul
     """
     Service to retrieve the menu for a specific restaurant.
     """
-    def __init__(self, restaurant_repository: IRestaurantRepository, menu_repository: IMenuRepository):
+    def __init__(self, restaurant_repository: IRestaurantRepository):
         super().__init__()
         self.restaurant_repository = restaurant_repository
-        self.menu_repository = menu_repository
 
     async def execute( self, data: GetMenuEntrySchema ) -> Result[RestaurantMenuResponse]:
         try:
@@ -36,6 +35,7 @@ class GetAllMenuApplicationService(IApplicationService[GetMenuEntrySchema, Resul
                 restaurant_name=restaurant.get_name(),
                 menu_items=[MenuItemBase(id=item.get_id(), name=item.get_name(), description=item.get_description(), category=item.get_category()) for item in restaurant.get_menu()]
             ))
+
         except Exception as e:
             print(e)
             return Result.failure(
