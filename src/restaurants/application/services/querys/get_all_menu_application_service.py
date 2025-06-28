@@ -24,10 +24,11 @@ class GetAllMenuApplicationService(IApplicationService[GetMenuEntrySchema, Resta
             restaurant = await self.restaurant_repository.get_restaurant_by_id(data.restaurant_id)
 
             menu = await self.menu_repository.get_menu(data.restaurant_id)
+
             return RestaurantMenuResponse(
                 restaurant_id=restaurant.get_id(),
                 restaurant_name=restaurant.get_name(),
-                menu_items=[MenuItem(id=item.get_id(), name=item.name(), description=item.description(), category=item.category()) for item in menu]
+                menu_items=[MenuItem(id=item.get_id(), name=item.get_name(), description=item.get_description(), category=item.get_category()) for item in menu]
             )
         except Exception as e:
             print(e)

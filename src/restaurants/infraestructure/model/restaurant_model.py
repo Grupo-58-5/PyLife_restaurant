@@ -9,6 +9,7 @@ if TYPE_CHECKING:
 
 if TYPE_CHECKING:
     from src.restaurants.infraestructure.model.menu_model import MenuModel
+    from src.reservations.infraestructure.models.reservation_model import ReservationModel
 
 
 class RestaurantModel(SQLModel, table=True):
@@ -23,3 +24,4 @@ class RestaurantModel(SQLModel, table=True):
 
     tables: List["TableModel"] = Relationship(back_populates="restaurant")
     menu_items: List["MenuModel"] = Relationship(back_populates="restaurant")
+    reservations: Optional[List["ReservationModel"]] = Relationship(back_populates="restaurant")

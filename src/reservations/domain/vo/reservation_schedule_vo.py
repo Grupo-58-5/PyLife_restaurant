@@ -9,8 +9,9 @@ class ReservationSchedule():
         self.start_time = start_time
         self.end_time = end_time
 
-    def validate(start_time: datetime, end_time: datetime):
+    def validate(self, start_time: datetime, end_time: datetime):
         """Reservations schedule Validations"""
+
         if start_time >= end_time:
             raise ValueError("Finish time must be later than start time.")
         duration = (end_time - start_time).total_seconds() / 3600

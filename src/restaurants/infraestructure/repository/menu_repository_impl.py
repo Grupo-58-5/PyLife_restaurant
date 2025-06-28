@@ -1,12 +1,11 @@
-
-
-
 from typing import List
 from uuid import UUID
 from sqlmodel.ext.asyncio.session import AsyncSession
 from sqlmodel import select
+from sqlalchemy.orm import selectinload
 from src.restaurants.domain.entity.menu_entity import MenuEntity
 from src.restaurants.domain.repository.i_menu_repository import IMenuRepository
+from src.restaurants.infraestructure.mappers.restaurant_mapper import MenuMapper
 from src.restaurants.infraestructure.model.menu_model import MenuModel
 from src.shared.utils.result import Result
 
@@ -27,12 +26,12 @@ class MenuRepositoryImpl(IMenuRepository):
         Retrieves the menu for a specific restaurant.
         """
         statement = select(MenuModel).where(MenuModel.restaurant_id == restaurant_id)
-        menu_model = await self.db.exec(statement).all()
+        menu_model = (await self.db.exec(statement)).all()
         if not menu_model:
             return []
         ## missing mapper
-        return [MenuEntity(id=m.id, name=m.name, description=m.description, category=m.category) for m in menu_model]
-    
+        return [MenuMapper.to_domain(m) for m in menu_model]
+
     async def create_item_menu(self, menu_data: MenuEntity, restaurant_id: UUID) -> MenuEntity:
         """
         Creates a new menu item for a restaurant.
@@ -62,3 +61,28 @@ class MenuRepositoryImpl(IMenuRepository):
 
     def delete_item_menu(self, menu_id: UUID) -> None:
         pass
+
+    async def get_menu_resturant(self, menu_id: UUID, restaurant_id: UUID) -> Result[MenuEntity]:
+        """
+        Verify that a menu belong to a specific restaurant and get the menu.
+        """
+        try:
+            statement = (
+                select(MenuModel)
+                .where(
+                    MenuModel.id == menu_id,
+                    MenuModel.restaurant_id == restaurant_id
+                )
+                .options(
+                    selectinload(MenuModel.restaurant),
+                )
+            )
+            result = (await self.db.exec(statement)).one_or_none()
+            if result is None:
+                return Result[MenuEntity].failure(Exception,f'Dish #{menu_id} does not belong to the restaurant menu)',400)
+            return Result.success(MenuMapper.to_domain(result))
+        except Exception as e:
+            return Result.failure(
+                error=e,
+                messg=f"Error searching for menu: {str(e)}"
+            )
