@@ -7,6 +7,7 @@ from src.restaurants.infraestructure.routes.menu_routes import router as menu_ro
 from src.restaurants.infraestructure.routes.table_routes import router as table_router
 from src.auth.infraestructure.routes.auth_routes import router as auth_router
 from src.auth.infraestructure.routes.user_routes import router as user_router
+from src.reservations.infraestructure.routes.reservations_routes import router as reservation_router
 from src.shared.config.settings import settings
 
 from contextlib import asynccontextmanager
@@ -48,6 +49,7 @@ def get_app() -> FastAPI:
     app.include_router(user_router)
     app.include_router(menu_router)
     app.include_router(table_router)
+    app.include_router(reservation_router)
     return app
 
 app = get_app()

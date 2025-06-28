@@ -14,8 +14,8 @@ class GetAllRestaurantApplicationService(IApplicationService[None, list[BaseRest
 
     async def execute(self) -> list[BaseRestaurantResponse]:
         try:
-            restaurants = await self.repository.get_all_restaurants()
-            return [BaseRestaurantResponse(id=r.get_id(), name=r.get_name(), address=r.get_address(), opening_hour=r.get_opening(), closing_hour=r.get_closing()) for r in restaurants]
+            restaurant = await self.repository.get_all_restaurants()
+            return [BaseRestaurantResponse(id=r.get_id(), name=r.get_name(), address=r.get_address(), opening_hour=r.get_opening(), closing_hour=r.get_closing()) for r in restaurant]
         except Exception as e:
             print(f"Error retrieving restaurants: {str(e)}")
             raise Exception(f"Error retrieving restaurants: {str(e)}") from e

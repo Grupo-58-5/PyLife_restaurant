@@ -1,0 +1,192 @@
+from datetime import datetime
+from typing import List, Optional
+from uuid import UUID
+from sqlmodel.ext.asyncio.session import AsyncSession
+from sqlmodel import select
+from sqlalchemy.orm import selectinload
+
+from src.reservations.domain.repository.reservation_repository import IReservationRepository
+from src.reservations.domain.reservation import Reservation
+from src.reservations.domain.vo.reservation_status_vo import ReservationStatus
+from src.reservations.infraestructure.mappers.reservation_mapper import ReservationMapper
+from src.reservations.infraestructure.models.pre_order_model import PreOrder
+from src.reservations.infraestructure.models.reservation_model import ReservationModel
+from src.shared.utils.result import Result
+
+# TODO: Reemplazar por Result en las respuestas
+class ReservationRepositoryImpl(IReservationRepository):
+
+    db: AsyncSession
+
+    def __init__(self,db: AsyncSession):
+        super().__init__()
+        self.db = db
+
+    async def get_all_restaurant_reservations(self, restaurant_id: UUID, page: int, page_size: int) -> List[Reservation]:
+        offset = (page - 1) * page_size
+        statement = (
+            select(ReservationModel)
+            .where(ReservationModel.restaurant_id == restaurant_id)
+            .options(
+                selectinload(ReservationModel.table),
+                selectinload(ReservationModel.client),
+                selectinload(ReservationModel.restaurant)
+            )
+            .offset(offset)
+            .limit(page_size)
+        )
+        result: Optional[List[ReservationModel]] = (await self.db.exec(statement)).all()
+        print("Lista de reservaciones: ",result)
+        reservations: List[Reservation] = [ReservationMapper.to_domain(x) for x in result]
+
+        return Result[List[Reservation]].success(reservations)
+
+    async def get_all_users_reservations(self, client_id: UUID, page: int, page_size: int) -> Result[List[Reservation]]:
+        try:
+            offset = (page - 1) * page_size
+            statement = (
+                select(ReservationModel)
+                .where(
+                    ReservationModel.client_id == client_id,
+                    ReservationModel.status != ReservationStatus.COMPLETED,
+                    ReservationModel.status != ReservationStatus.CANCELED,
+                )
+                .options(
+                    selectinload(ReservationModel.table),
+                    selectinload(ReservationModel.client),
+                    selectinload(ReservationModel.restaurant),
+                    selectinload(ReservationModel.dishes)
+                )
+                .offset(offset)
+                .limit(page_size)
+            )
+            result: Optional[List[ReservationModel]] = (await self.db.exec(statement)).all()
+            print("Lista de reservaciones: ",result)
+
+            reservations: List[Reservation] = [ReservationMapper.to_domain(x) for x in result]
+
+            return Result[List[Reservation]].success(reservations)
+        except BaseException as e:
+            print(f"Error {e}")
+            return Result[bool].failure(e,str(e),500)
+
+    async def get_reservations_by_date(self, date: datetime) -> List[Reservation]:
+        pass
+
+    async def verify_reservations_by_date_and_user(self, start_time: datetime, finish_time: datetime, client_id: UUID) -> Result[bool]:
+        try:
+            statement = (
+                select(ReservationModel)
+                .where(
+                    ReservationModel.client_id == client_id,
+                    ReservationModel.status != ReservationStatus.COMPLETED,
+                    ReservationModel.status != ReservationStatus.CANCELED,
+                    start_time.replace(tzinfo=None) <= ReservationModel.finish_time,
+                    finish_time.replace(tzinfo=None) > ReservationModel.start_time,
+                )
+            )
+            result: Optional[List[ReservationModel]] = (await self.db.exec(statement)).all()
+            print("Lista de reservaciones: ",result)
+
+            if result is None or len(result) == 0:
+                return Result[bool].success(True)
+
+            return Result[bool].success(result)
+        except BaseException as e:
+            return Result[bool].failure(e,'Failed query',500)
+
+    async def verify_reservations_by_date_and_table(self, restaurant_id: UUID, start_time: datetime, finish_time: datetime,table_id: UUID) -> Result[bool]:
+
+        try:
+            statement = (
+                select(ReservationModel)
+                .where(
+                    ReservationModel.restaurant_id == restaurant_id,
+                    ReservationModel.table_id == table_id,
+                    ReservationModel.status != ReservationStatus.COMPLETED,
+                    ReservationModel.status != ReservationStatus.CANCELED,
+                    start_time.replace(tzinfo=None) <= ReservationModel.finish_time,
+                    finish_time.replace(tzinfo=None) > ReservationModel.start_time,
+                )
+            )
+            result: Optional[List[ReservationModel]] = (await self.db.exec(statement)).all()
+            print("Lista de reservaciones: ",result)
+
+            if result is None or len(result) == 0:
+                return Result[bool].success(True)
+
+            return Result[bool].success(False)
+        except BaseException as e:
+            print(f"Error {e}")
+            return Result[bool].failure(e,'Failed query',500)
+
+    async def get_reservation_by_id(self, reservation_id: UUID) -> Result[Reservation]:
+        try:
+            statement = (
+                select(ReservationModel)
+                .where(
+                    ReservationModel.id == reservation_id
+                )
+                .options(
+                    selectinload(ReservationModel.table),
+                    selectinload(ReservationModel.client),
+                    selectinload(ReservationModel.restaurant)
+                )
+            )
+            result: Optional[ReservationModel] = (await self.db.exec(statement)).one_or_none()
+            if result is None:
+                return Result[Reservation].failure(BaseException,'Reservation Not Found',404)
+            print("Reservation: ",result)
+
+            reservations: Reservation = ReservationMapper.to_domain(result)
+
+            return Result[Reservation].success(reservations)
+        except BaseException as e:
+            print(f"Error {e}")
+            return Result[str].failure(e,str(e),500)
+
+    async def create_reservation(self, reservation: Reservation) -> Result[Reservation]:
+        try:
+            reservation_model: ReservationModel = ReservationMapper.to_model(reservation)
+            self.db.add(reservation_model)
+            await self.db.commit()
+            await self.db.refresh(reservation_model)
+            for dish in reservation.get_dishes():
+                pre_order = PreOrder(
+                    dish_id=dish.get_menu_id(),
+                    reservation_id=reservation.get_id()
+                )
+                self.db.add(pre_order)
+                await self.db.commit()
+                await self.db.refresh(pre_order)
+            return Result[Reservation].success(reservation)
+        except BaseException as e:
+            print(f"Error {e}")
+            return Result[Reservation].failure(e,"Failed insert in Reservation Table",500)
+
+    async def update_reservation(self, reservation_id: UUID, reservation: Reservation) -> Result[Reservation]:
+        pass
+
+    async def cancel_reservation(self, reservation_id: UUID, reservation: Reservation) -> Result[Reservation]:
+        try:
+            statement = (
+                select(ReservationModel)
+                .where(
+                    ReservationModel.id == reservation_id
+                )
+                .options(
+                    selectinload(ReservationModel.table),
+                    selectinload(ReservationModel.client),
+                    selectinload(ReservationModel.restaurant)
+                )
+            )
+            reservation_model: Optional[ReservationModel] = (await self.db.exec(statement)).one_or_none()
+            reservation_model.status = reservation.get_status()
+            await self.db.commit()
+            await self.db.refresh(reservation_model)
+            print("Reservasion actualizada: ",reservation_model)
+            return Result[Reservation].success(ReservationMapper.to_domain(reservation_model))
+        except BaseException as e:
+            return Result.failure(e,str(e),500)
+
+
