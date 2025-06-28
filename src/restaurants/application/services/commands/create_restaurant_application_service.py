@@ -53,28 +53,10 @@ class CreateRestaurantApplicationService(IApplicationService[CreateRestaurantSch
 
             saved_restaurant = await self.repository.create_restaurant(restaurant)
             if not saved_restaurant.is_succes():
-                return Result.failure(Exception('Strange error'), saved_restaurant.messg, 400)
+                return Result.failure(Exception('Strange error saving restaurant'), saved_restaurant.messg, 400)
 
-<<<<<<< HEAD
-            return RestaurantDetailResponse(
-                id=restaurant.get_id(),
-                name=restaurant.get_name(),
-                address=restaurant.get_address(),
-                opening_hour=restaurant.get_opening(),
-                closing_hour=restaurant.get_closing(),
-                menu= [
-                    MenuItemBase(
-                        id=item.get_id(),
-                        name=item.name,
-                        description=item.description,
-                        category=item.category
-                    ) for item in restaurant.get_menu()
-                ],
-                tables=[]  # Assuming no tables are defined at creation, can be added later
-            )
-=======
             restaurant = saved_restaurant.result()
-            print(restaurant)
+            # print(restaurant)
             return Result.success(
                 RestaurantDetailResponse(
                     id=restaurant.get_id(),
@@ -95,6 +77,5 @@ class CreateRestaurantApplicationService(IApplicationService[CreateRestaurantSch
         except ValueError as ve:
             print('veee')
             return Result.failure(Exception(str(ve)), str(ve), 400)
->>>>>>> d853d1d889362314c013dde368a9bea5f1065f03
         except Exception as e:
             return Result.failure(e, str(e))
