@@ -67,10 +67,10 @@ class CreateRestaurantApplicationService(IApplicationService[CreateRestaurantSch
 
             saved_restaurant = await self.repository.create_restaurant(restaurant)
             if not saved_restaurant.is_succes():
-                return Result.failure(Exception('Strange error'), saved_restaurant.messg, 400)
+                return Result.failure(Exception('Strange error saving restaurant'), saved_restaurant.messg, 400)
 
             restaurant = saved_restaurant.result()
-            print(restaurant)
+            # print(restaurant)
             return Result.success(
                 RestaurantDetailResponse(
                     id=restaurant.get_id(),

@@ -28,12 +28,13 @@ async def get_repository(session: AsyncSession = Depends(get_session)) -> Restau
 )
 async def get_restaurants(info: Annotated[Result[dict],Depends(auth.decode)], repo : RestaurantRepositoryImpl = Depends(get_repository)):
 
-    try:
-        service = GetAllRestaurantApplicationService(repo)
-        res= await service.execute()
-        return res
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+    service = GetAllRestaurantApplicationService(repo)
+    res= await service.execute()
+    print("Response from get_restaurants: ", res)
+    if res.is_error():
+        raise HTTPException(status_code=500, detail=str(res.get_error_message()))
+    
+    return res.result()
 
 @router.post(
     "/",
@@ -50,7 +51,6 @@ async def create_restaurant(info: Annotated[Result[dict],Depends(auth.decode)], 
     res = await service.execute(restaurant)
     if res.is_error():
         if res.get_error_code() == 400:
-            print('csm')
             raise HTTPException(status_code=400, detail=str(res.get_error_message()))
         else:
             raise HTTPException(status_code=500, detail="Unexpected error")

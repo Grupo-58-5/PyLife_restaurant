@@ -1,7 +1,7 @@
 services:
   
   pythondb:
-    image: postgres:17.2
+    image: postgres:15
     # restart: always
     ports:
       - "${DB_PORT:-5432}:5432"
