@@ -3,7 +3,7 @@
 ## * TESTS for Restaurant Tables API Endpoints
 
 ## ? Test for validating creating a table with 13 seats on table creation
-def test_create_restaurant_table_13_seats(client,prepare_db):
+def test_create_restaurant_table_13_seats(client):
     '''
     Test de Mesas:
         ◦ Asegurar que una mesa con capacidad 1 o 13 sea rechazada.
@@ -32,11 +32,11 @@ def test_create_restaurant_table_13_seats(client,prepare_db):
     assert response.status_code == 400
     data = response.json()
     ##TODO Adjust when the mesj is defined
-    assert data["detail"]['msg'] == "Table must have between 2 and 12 seats, not 13"
+    assert data["detail"]== "Table must have between 2 and 12 seats, not 13"
 
 
 ## ? Test for validating creating a table with 1 seat on table creation
-def test_create_table_restaurant_1_seat(client,prepare_db):
+def test_create_table_restaurant_1_seat(client):
     '''
     Test de Mesas:
         ◦ Asegurar que una mesa con capacidad 1 o 13 sea rechazada.
@@ -67,11 +67,11 @@ def test_create_table_restaurant_1_seat(client,prepare_db):
     assert response.status_code == 400
     data = response.json()
     ##TODO Adjust when the mesj is defined
-    assert data["detail"]['msg'] == "Table must have between 2 and 12 seats"
+    assert data["detail"] == "Table must have between 2 and 12 seats"
 
 
 ## ? Test for validating duplicated table numbers for a restaurant on table creation
-def test_duplicated_number_table_for_restaurant(client,prepare_db):
+def test_duplicated_number_table_for_restaurant(client):
     body_restaurant = {
         "name": "Restaurant - table number duplicated",
         "address":"Caracas - Las Mercedes",
@@ -98,4 +98,4 @@ def test_duplicated_number_table_for_restaurant(client,prepare_db):
     assert response_table_2.status_code == 409
     data = response_table_2.json()
     ##TODO Adjust when the mesj is defined
-    assert data["detail"]['msg'] == "Table numbers must not repeat on a restaurant"
+    assert data["detail"] == "Table numbers must not repeat on a restaurant"

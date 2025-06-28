@@ -2,7 +2,7 @@
 ## * TESTS for restaurants API Endpoints
 
 ## ? Test for validatinf closing hour must be greater than opening hour
-def test_hour_closing_create_restaurant(client,prepare_db):
+def test_hour_closing_create_restaurant(client):
     body = {
         "name": "Restaurant Calidad",
         "address":"Caracas - Las Mercedes",
@@ -15,11 +15,11 @@ def test_hour_closing_create_restaurant(client,prepare_db):
 
     assert response.status_code == 400
     data = response.json()
-    assert data["detail"]['msg'] == "Closing hour must be greather than opening hour"
+    assert data["detail"] == "Closing hour must be greather than opening hour"
 
 
 ## ? Test for validating creating a restaurant with a table with 13 seats on restaurant creation
-def test_create_restaurant_with_table_13_seats(client,prepare_db):
+def test_create_restaurant_with_table_13_seats(client):
     '''
     Test de Mesas:
         ◦ Asegurar que una mesa con capacidad 1 o 13 sea rechazada.
@@ -44,11 +44,11 @@ def test_create_restaurant_with_table_13_seats(client,prepare_db):
     assert response.status_code == 400
     data = response.json()
     ##TODO Adjust when the mesj is defined
-    assert data["detail"]['msg'] == "Table must have between 2 and 12 seats, not 13"
+    assert data["detail"] == "Table must have between 2 and 12 seats, not 13"
 
 
 ## ? Test for validating creating a restaurant with a table with 1 seat on restaurant creation
-def test_create_restaurant_1_seat_on_table(client,prepare_db):
+def test_create_restaurant_1_seat_on_table(client):
     '''
     Test de Mesas:
         ◦ Asegurar que una mesa con capacidad 1 o 13 sea rechazada.
@@ -73,11 +73,11 @@ def test_create_restaurant_1_seat_on_table(client,prepare_db):
     assert response.status_code == 400
     data = response.json()
     ##TODO Adjust when the mesj is defined
-    assert data["detail"]['msg'] == "Table must have between 2 and 12 seats"
+    assert data["detail"] == "Table must have between 2 and 12 seats"
 
 
 ## ? Test for validating duplicated table numbers on restaurant creation
-def test_duplicated_number_restaurant_table(client,prepare_db):
+def test_duplicated_number_restaurant_table(client):
     '''
     Test de Mesas:
         ◦ Asegurar que no se puedan crear dos mesas con el mismo número en un restaurante.
@@ -107,11 +107,11 @@ def test_duplicated_number_restaurant_table(client,prepare_db):
     assert response.status_code == 409
     data = response.json()
     ##TODO Adjust when the mesj is defined
-    assert data["detail"]['msg'] == "Table numbers must not repeat on a restaurant"
+    assert data["detail"] == "Table numbers must not repeat on a restaurant"
 
 
 ## ? Test for validating menu items with same name on restaurant creation
-def test_create_restaurant_menu_items_same_name(client,prepare_db):
+def test_create_restaurant_menu_items_same_name(client):
     body = {
         "name": "Restaurant Calidad",
         "address":"Caracas - Las Mercedes",
@@ -136,4 +136,4 @@ def test_create_restaurant_menu_items_same_name(client,prepare_db):
     assert response.status_code == 409
     data = response.json()
     ##TODO Adjust when the mesj is defined
-    assert data["detail"]['msg'] == "Menu items must not repeat on a restaurant, found: Hamburger"
+    assert data["detail"] == "Menu items must not repeat on a restaurant, found: Hamburger"

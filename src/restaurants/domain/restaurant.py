@@ -107,7 +107,7 @@ class Restaurant:
         for table in tables:
             table_number = table.get_table_number()
             if table_number in existing_numbers or table_number in new_numbers:
-                raise ValueError(f"Duplicate table number found: {table_number}")
+                raise ValueError(f"Table with number { table_number } already exists in the restaurant")
             new_numbers.add(table_number)
 
         self.tables.extend(tables)

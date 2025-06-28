@@ -2,7 +2,7 @@
 
 ## * TESTS for restaurant Menu API Endpoints
 ## ? Test for validating menu items with same name on menu creation
-def test_menu_items_same_name_for_restaurant(client,prepare_db):
+def test_menu_items_same_name_for_restaurant(client):
     body_restaurant = {
         "name": "Restaurant Calidad",
         "address":"Caracas - Las Mercedes",
@@ -30,8 +30,8 @@ def test_menu_items_same_name_for_restaurant(client,prepare_db):
     data = response_menu_2.json()
 
     ##TODO Adjust when the mesj is defined
-    assert data["detail"]['msg'] == "Menu items must not repeat on a restaurant, found: Hamburger"
+    assert data["detail"] == "Menu items must not repeat on a restaurant, found: Hamburger"
 
 
-def test_client_must_not_add_menu(client, prepare_db):
+def test_client_must_not_add_menu(client):
     pass
