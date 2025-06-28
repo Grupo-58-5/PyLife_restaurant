@@ -1,6 +1,7 @@
 
 
 
+from typing import List
 from src.restaurants.application.schemas.response.restaurant_schema_response import BaseRestaurantResponse
 from src.restaurants.domain.repository.i_restaurant_repository import IRestaurantRepository
 from src.shared.utils.i_application_service import IApplicationService
@@ -22,7 +23,7 @@ class GetAllRestaurantApplicationService(IApplicationService[None, Result[list[B
             return response
         except Exception as e:
             print(f"Error retrieving restaurants: {str(e)}")
-            return Result[list[BaseRestaurantResponse]].error(
-                error_code=500,
-                error_message="Error retrieving restaurants: " + str(e)
+            return Result[list[BaseRestaurantResponse]].failure(
+                code=500,
+                messg="Error retrieving restaurants: " + str(e)
             )

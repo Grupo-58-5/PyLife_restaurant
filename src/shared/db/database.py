@@ -42,7 +42,7 @@ else:
         future=True,
     )
 
-async def get_session() -> AsyncGenerator[AsyncSession]:
+async def get_session() -> AsyncGenerator[AsyncSession, None]:
     print("Esta en testing: ",TESTING)
     async_session = sessionmaker(
         engine, class_=AsyncSession, expire_on_commit=False

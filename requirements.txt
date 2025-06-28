@@ -20,3 +20,4 @@ sqlalchemy
 psycopg2-binary
 python-dotenv
 pydantic_settings
+aiosqlite==0.21.0

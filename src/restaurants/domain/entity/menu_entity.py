@@ -32,14 +32,45 @@ class MenuEntity():
         """Factory method to create a MenuEntity instance."""
         return cls(id, name, description, category)
     
+    @property
     def get_id(self) -> UUID:
         return self.id
+    
+    @property
+    def name(self) -> str:
+        return self._name
     
     def get_name(self) -> str:
         return self._name
     
+    @property
+    def description(self) -> str:
+        return self._description
+    
     def get_description(self) -> str:
         return self._description
     
+    @property
+    def category(self) -> str:
+        return self._category
+    
     def get_category(self) -> str:
         return self._category
+    
+    @name.setter
+    def name(self, value: str) -> None:
+        """Sets the name of the menu item."""
+        self._name = value
+        self.validate()
+    
+    @description.setter
+    def description(self, value: str) -> None:
+        """Sets the description of the menu item."""
+        self._description = value
+        self.validate()
+    
+    @category.setter
+    def category(self, value: str) -> None:
+        """Sets the category of the menu item."""
+        self._category = value
+        self.validate()

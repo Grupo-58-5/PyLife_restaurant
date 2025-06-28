@@ -57,8 +57,7 @@ class RestaurantMapper():
             table_number=table.get_table_number(),
             capacity=table.get_seats(),
             location=table.get_location()
-        )    
-    
+        )
 
 class MenuMapper():
 
