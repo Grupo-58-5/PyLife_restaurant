@@ -1,7 +1,9 @@
 import asyncio
+from datetime import datetime
 from typing import AsyncGenerator
 import pytest
 from fastapi.testclient import TestClient
+from src.restaurants.infraestructure.model.restaurant_model import RestaurantModel
 from src.shared.db.init_db import create_tables
 
 from src.auth.infraestructure.model.user_model import UserModel
@@ -45,10 +47,28 @@ def insert_users(create_async_tables):
             await session.refresh(user)
     asyncio.run(insert_client())
 
+@pytest.fixture(scope="session")
+def insert_restaurant(create_async_tables):
+    print("Ejecutando Fixture")
+    async def insert():
+        async for session in get_session():
+            restaurant = RestaurantModel(
+                name='Luigi',
+                location='Vista Alegre',
+                opening_time=datetime.strptime('08:00:00', "%H:%M:%S").time(),
+                closing_time=datetime.strptime('22:00:00', "%H:%M:%S").time()
+            )
+            session.add(restaurant)
+            await session.commit()
+            await session.refresh(restaurant)
+            return restaurant.id
+    return asyncio.run(insert())
+
 @pytest.fixture(scope="function")
 def client(insert_users):
     with TestClient(app) as test_client:
         yield test_client
+
 
 @pytest.fixture(scope="function")
 def get_token_admin(client):
