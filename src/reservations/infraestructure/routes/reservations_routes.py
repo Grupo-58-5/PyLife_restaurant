@@ -71,14 +71,14 @@ async def create_reservation(
     info: Annotated[Result[dict],Depends(auth.decode)],
     body: CreateReservationSchemaEntry,
     repo_reservation: ReservationRepositoryImpl = Depends(get_repository_reservation),
-    repo_menu: MenuRepositoryImpl = Depends(get_repository_menu)
+    repo_restaurant: RestaurantRepositoryImpl = Depends(get_repository_restaurant)
 ):
     client_id: str = info.value.get("id")
     data = ReservationSchemaEntry.model_validate({**body.model_dump(), "client_id": client_id})
 
     service = CreateReservationService(
         reservation_repository=repo_reservation,
-        repo_menu=repo_menu,
+        restaurant_repository=repo_restaurant
     )
 
     result = await service.execute(data)
@@ -133,8 +133,7 @@ async def get_client_reservations(
     query: UserAllSchemaEntry = Depends(),
     repo_reservation: ReservationRepositoryImpl = Depends(get_repository_reservation),
     repo_restaurant: RestaurantRepositoryImpl = Depends(get_repository_restaurant),
-    repo_table: TableRepositoryImpl = Depends(get_repository_table),
-    repo_menu: MenuRepositoryImpl = Depends(get_repository_menu)
+    repo_table: TableRepositoryImpl = Depends(get_repository_table)
 ):
     client_id: str = info.value.get("id")
     data = GetReservationsByUserSchemaEntry.model_validate({
@@ -144,8 +143,7 @@ async def get_client_reservations(
     service = GetActiveReservationsUserService(
         repo_reservation=repo_reservation,
         repo_restaurant=repo_restaurant,
-        repo_table=repo_table,
-        repo_menu=repo_menu
+        repo_table=repo_table
     )
 
     result = await service.execute(data)
