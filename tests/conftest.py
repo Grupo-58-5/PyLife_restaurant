@@ -24,7 +24,7 @@ def create_async_tables():
 
 
 @pytest.fixture(scope="session")
-def insert_admin(create_async_tables):
+def insert_users(create_async_tables):
     async def insert_admin():
         async for session in get_session():
             bash = BcryptHashAdapter()
@@ -35,8 +35,18 @@ def insert_admin(create_async_tables):
             await session.refresh(user)
     asyncio.run(insert_admin())
 
+    async def insert_client():
+        async for session in get_session():
+            bash = BcryptHashAdapter()
+            password = await bash.get_password_hashed('password')
+            user = UserModel(name='Test', email='test@gmail.com', password=password, role=Roles.CLIENT)
+            session.add(user)
+            await session.commit()
+            await session.refresh(user)
+    asyncio.run(insert_client())
+
 @pytest.fixture(scope="function")
-def client(insert_admin):
+def client(insert_users):
     with TestClient(app) as test_client:
         yield test_client
 
@@ -53,10 +63,6 @@ def get_token_admin(client):
 
 @pytest.fixture(scope="function")
 def get_token_client(client):
-
-    user = {"name": "test","email":"test@gmail.com","password": "password"}
-    client.post("/auth/sign_up",json=user)
-
     form_data = {
         'username': 'test@gmail.com',
         'password': 'password'

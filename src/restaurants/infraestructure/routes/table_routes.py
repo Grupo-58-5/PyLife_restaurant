@@ -59,7 +59,9 @@ async def get_table(restaurant_id: UUID, info: Annotated[Result[dict],Depends(au
 @router.post(
     "/{restaurant_id}",
     summary="Create table for a restaurant",
-    dependencies=[Depends(VerifyScope(["admin:read",'admin:write'],auth))]
+    status_code=status.HTTP_201_CREATED,
+    response_model=BaseTableResponse,
+    dependencies=[Depends(VerifyScope(["admin:read",'admin:write'], auth))]
 )
 async def create_table(restaurant_id: UUID, table_data: CreateTableSchema, info: Annotated[Result[dict],Depends(auth.decode)],restaurant_repo: RestaurantRepositoryImpl = Depends(get_restaurant_repository), table_repo: TableRepositoryImpl = Depends(get_table_repository) ):
 

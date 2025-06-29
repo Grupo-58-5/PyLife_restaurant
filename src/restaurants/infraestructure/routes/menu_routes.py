@@ -1,7 +1,7 @@
 
 
 
-from typing import Final
+from typing import Annotated, Final
 from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlmodel.ext.asyncio.session import AsyncSession
@@ -34,8 +34,14 @@ async def get_menu_repository(session: AsyncSession = Depends(get_session)) -> M
 router = APIRouter(prefix="/menu", tags=["Menu"])
 auth: Final = JWTAuthAdapter()
 
-@router.get("/{restaurant_id}", summary="Get Menu by Restaurant ID",  response_model=RestaurantMenuResponse, status_code=status.HTTP_200_OK)
-async def get_menu(restaurant_id: UUID, restaurant_repo : RestaurantRepositoryImpl = Depends(get_restaurant_repository) ):
+@router.get(
+        "/{restaurant_id}", 
+        summary="Get Menu by Restaurant ID",  
+        response_model=RestaurantMenuResponse, 
+        status_code=status.HTTP_200_OK,
+        dependencies=[Depends(VerifyScope(["admin:read","admin:write", "client:read", "client:write"], auth))]
+        )
+async def get_menu(info: Annotated[Result[dict], Depends(auth.decode)], restaurant_id: UUID, restaurant_repo : RestaurantRepositoryImpl = Depends(get_restaurant_repository) ):
     """
     Retrieve the menu for a specific restaurant.
     """
@@ -47,8 +53,14 @@ async def get_menu(restaurant_id: UUID, restaurant_repo : RestaurantRepositoryIm
     else:
         raise HTTPException(status_code=400, detail=res.get_error_message) 
 
-@router.post("/{restaurant_id}", summary="Create Menu Item",  response_model=MenuItemResponse, status_code=status.HTTP_201_CREATED)
-async def create_menu_item(restaurant_id: UUID, menu: CreateMenuItemSchema, restaurant_repo : RestaurantRepositoryImpl = Depends(get_restaurant_repository), menu_repo : MenuRepositoryImpl = Depends(get_menu_repository)):
+@router.post(
+        "/{restaurant_id}", 
+        summary="Create Menu Item",  
+        response_model=MenuItemResponse, 
+        status_code=status.HTTP_201_CREATED,
+        dependencies=[Depends(VerifyScope(["admin:read","admin:write"], auth))]
+        )
+async def create_menu_item(info: Annotated[Result[dict], Depends(auth.decode)], restaurant_id: UUID, menu: CreateMenuItemSchema, restaurant_repo : RestaurantRepositoryImpl = Depends(get_restaurant_repository), menu_repo : MenuRepositoryImpl = Depends(get_menu_repository)):
     """
     Create a new menu item for a specific restaurant.
     """
@@ -64,8 +76,14 @@ async def create_menu_item(restaurant_id: UUID, menu: CreateMenuItemSchema, rest
             raise HTTPException(status_code=500, detail="Unexpected error")
     
 
-@router.delete("/{restaurant_id}", status_code=status.HTTP_200_OK, response_model=MenuItemResponse, summary="Delete Menu Item")    
-async def delete_menu_item(restaurant_id: UUID, menu_id:UUID, restaurant_repo : RestaurantRepositoryImpl = Depends(get_restaurant_repository), menu_repo: MenuRepositoryImpl = Depends(get_menu_repository)):
+@router.delete(
+        "/{restaurant_id}", 
+        status_code=status.HTTP_200_OK, 
+        response_model=MenuItemResponse, 
+        summary="Delete Menu Item",
+        dependencies=[Depends(VerifyScope(["admin:read","admin:write"], auth))]
+        )    
+async def delete_menu_item(info: Annotated[Result[dict], Depends(auth.decode)], restaurant_id: UUID, menu_id:UUID, restaurant_repo : RestaurantRepositoryImpl = Depends(get_restaurant_repository), menu_repo: MenuRepositoryImpl = Depends(get_menu_repository)):
 
     service = DeleteMenuApplicationService(restaurant_repo,menu_repo)
     schema = DeleteMenuSchema(restaurant_id=restaurant_id, menu_id=menu_id)
