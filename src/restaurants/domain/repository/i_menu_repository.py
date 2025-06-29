@@ -12,10 +12,6 @@ class IMenuRepository(ABC):
     """
 
     @abstractmethod
-    async def get_menu(self, restaurant_id: UUID) -> List[MenuEntity]:
-        pass
-
-    @abstractmethod
     async def create_item_menu(self, menu_data: MenuEntity , restaurant_id: UUID) -> Result[MenuEntity]:
         pass
 
@@ -25,8 +21,4 @@ class IMenuRepository(ABC):
 
     @abstractmethod
     def delete_item_menu(self, menu_id: UUID) -> None:
-        pass
-
-    @abstractmethod
-    async def get_menu_resturant(self, menu_id: UUID, restaurant_id: UUID) -> Result[MenuEntity]:
         pass

@@ -36,6 +36,9 @@ class MenuEntity():
     def get_id(self) -> UUID:
         return self.id
     
+    def get_id(self) -> UUID:
+        return self.id
+    
     @property
     def name(self) -> str:
         return self._name

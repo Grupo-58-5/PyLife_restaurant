@@ -18,6 +18,7 @@ from contextlib import asynccontextmanager
 async def lifespan(_: FastAPI):
     try:
         print("Se estan creando las tablas")
+        print("Settings TESTING: ", settings.TESTING)
         await create_tables()
         yield
     except RuntimeError as e:
@@ -31,8 +32,7 @@ def get_app() -> FastAPI:
     app = FastAPI(
         title = "Restaurant and Reservation API by PyLife.dev",
         description="Project about a Restaurant and Reservation administration API by PyLife.dev",
-        version = "0.1.0",
-        lifespan=lifespan if settings.TESTING is True else None
+        version = "0.1.0"
     )
 
 
