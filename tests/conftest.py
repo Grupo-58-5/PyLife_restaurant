@@ -12,7 +12,7 @@ from src.main import app
 from src.auth.domain.enum.role import Roles
 
 
-@pytest.fixture(scope="session", autouse=True)
+@pytest.fixture(scope="session", autouse=False)
 def create_async_tables():
     asyncio.run(create_tables())
     yield
