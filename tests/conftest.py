@@ -40,18 +40,6 @@ def client(insert_admin):
     with TestClient(app) as test_client:
         yield test_client
 
-@pytest.fixture(scope="session")
-def prepare_test_db():
-    async def insert_admin():
-        async for session in get_session():
-            bash = BcryptHashAdapter()
-            password = await bash.get_password_hashed('password')
-            user = UserModel(name='Luigi', email='luigi@test.com', password=password, role=Roles.ADMIN)
-            session.add(user)
-            await session.commit()
-            await session.refresh(user)
-    asyncio.run(insert_admin())
-
 @pytest.fixture(scope="function")
 def get_token_admin(client):
     # Login usando TestClient (sincrónico)
