@@ -18,6 +18,7 @@ from contextlib import asynccontextmanager
 async def lifespan(_: FastAPI):
     try:
         print("Se estan creando las tablas")
+        print("Settings TESTING: ", settings.TESTING)
         await create_tables()
         yield
     except RuntimeError as e:

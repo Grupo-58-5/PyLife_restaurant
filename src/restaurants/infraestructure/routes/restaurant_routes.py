@@ -1,4 +1,5 @@
 from typing import Annotated, Final
+from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException, status
 
 from sqlmodel.ext.asyncio.session import AsyncSession
@@ -6,6 +7,7 @@ from src.auth.infraestructure.JWT.JWT_auth_adapter import JWTAuthAdapter
 from src.auth.infraestructure.JWT.dependencies.verify_scope import VerifyScope
 from src.restaurants.application.services.commands.create_restaurant_application_service import CreateRestaurantApplicationService
 from src.restaurants.application.services.querys.get_all_restaurant_application_sevice import GetAllRestaurantApplicationService
+from src.restaurants.application.services.querys.get_restaurant_application_service import GetRestaurantApplicationService
 from src.restaurants.infraestructure.repository.restaurant_repository_impl import RestaurantRepositoryImpl
 from src.restaurants.application.schemas.entry.resaurant_schema_entry import CreateRestaurantSchema
 from src.restaurants.application.schemas.response.restaurant_schema_response import BaseRestaurantResponse, RestaurantDetailResponse
@@ -54,4 +56,19 @@ async def create_restaurant(info: Annotated[Result[dict],Depends(auth.decode)], 
             raise HTTPException(status_code=400, detail=str(res.get_error_message()))
         else:
             raise HTTPException(status_code=500, detail="Unexpected error")
+    return res.result()
+
+@router.get(
+    "/{restaurant_id}", response_model=RestaurantDetailResponse,
+    status_code=status.HTTP_200_OK,
+    dependencies=[Depends(VerifyScope(["admin:read","admin:write","client:write","client:read"], auth))]
+)
+async def get_restaurant_by_id(restaurant_id: UUID, info: Annotated[Result[dict], Depends(auth.decode)], repo : RestaurantRepositoryImpl = Depends(get_repository)):
+    service = GetRestaurantApplicationService(repo)
+    res: Result[RestaurantDetailResponse] = await service.execute(restaurant_id)
+    if res.is_error():
+        if res.get_error_code() != 500:
+            raise HTTPException(status_code=res.get_error_code(), detail=str(res.get_error_message()))
+        else:
+            raise HTTPException(status_code=500, detail=str(res.get_error_message()))
     return res.result()

@@ -1,13 +1,14 @@
 
 
 
+from uuid import UUID
 from src.restaurants.application.schemas.response.restaurant_schema_response import RestaurantDetailResponse
 from src.restaurants.domain.repository.i_restaurant_repository import IRestaurantRepository
 from src.shared.utils.i_application_service import IApplicationService
 from src.shared.utils.result import Result
 
 
-class GetRestaurantApplicationService(IApplicationService[str, Result[RestaurantDetailResponse]]):	
+class GetRestaurantApplicationService(IApplicationService[UUID, Result[RestaurantDetailResponse]]):	
     """
     Service to get a restaurant by its ID.
     """
@@ -15,7 +16,7 @@ class GetRestaurantApplicationService(IApplicationService[str, Result[Restaurant
     def __init__(self, restaurant_repository: IRestaurantRepository):
         self.repo = restaurant_repository
 
-    async def execute(self, restaurant_id: str) -> Result[RestaurantDetailResponse]:
+    async def execute(self, restaurant_id: UUID) -> Result[RestaurantDetailResponse]:
         """
         Get a restaurant by its ID.
         """
@@ -24,27 +25,29 @@ class GetRestaurantApplicationService(IApplicationService[str, Result[Restaurant
             if not restaurant:
                 return Result.failure(
                     Exception("Restaurant not found with id: " + restaurant_id),
-                    "Restaurant not found",
+                    f"Restaurant not found with id: {restaurant_id}",
                     404
                 )
-            return Result.success(
+            print("Restaurant found: ", restaurant)
+            return Result[RestaurantDetailResponse].success(
                 RestaurantDetailResponse(
                     id=restaurant.get_id(),
                     name=restaurant.get_name(),
                     address=restaurant.get_address(),
                     opening_hour=restaurant.get_opening(),
                     closing_hour=restaurant.get_closing(),
-                    menu_items=[{
-                        "id": item.get_id(),
+                    menu_items= [{
+                        "id": item.get_id,
                         "name": item.get_name(),
                         "description": item.get_description(),
                         "category": item.get_category()
-                    } for item in restaurant.get_menu()]
-                    # tables=[{
-                    #     "id": table.get_id(),
-                    #     "capacity": table.get_capacity(),
-                    #     "location": table.get_location()
-                    # } for table in restaurant.get_tables()]
+                    } for item in restaurant.get_menu()],
+                    tables=[{
+                        "id": table.get_id(),
+                        "table_number": table.get_table_number(),
+                        "seats": table.get_seats(),
+                        "location": table.get_location()
+                    } for table in restaurant.get_tables()]
                 )
             )
         except ValueError as ve:
