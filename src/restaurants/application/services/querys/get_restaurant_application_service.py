@@ -43,7 +43,6 @@ class GetRestaurantApplicationService(IApplicationService[UUID, Result[Restauran
                         "category": item.get_category()
                     } for item in restaurant.get_menu()],
                     tables=[{
-                        "id": table.get_id(),
                         "table_number": table.get_table_number(),
                         "seats": table.get_seats(),
                         "location": table.get_location()

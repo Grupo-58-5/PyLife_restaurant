@@ -5,7 +5,6 @@ from src.restaurants.application.schemas.entry.create_table_schema import TableL
 
 class BaseTableResponse(BaseModel):
 
-    id: UUID
     table_number: int
     seats: int
     location: str | TableLocation

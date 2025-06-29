@@ -46,7 +46,6 @@ class CreateTableApplicationService(IApplicationService[CreateTableSchema, Resul
             saved_table = saved_table.result()
             return Result.success(
                 BaseTableResponse(
-                    id=saved_table.get_id(),
                     table_number=saved_table.get_table_number(),
                     seats=saved_table.get_seats(),
                     location=saved_table.get_location()

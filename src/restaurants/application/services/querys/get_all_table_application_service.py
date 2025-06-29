@@ -27,16 +27,22 @@ class GetAllTableApplicationService(IApplicationService[GetTableEntrySchema, Res
                     error_code=404
                 )
             
+            response_tables = []
+            if data.location is not None: 
+                response_tables = [table for table in restaurant.get_tables() if table.get_location() == data.location.value and table.get_seats() >= data.capacity] 
+            else:
+                response_tables = [table for table in restaurant.get_tables() if table.get_seats() >= data.capacity]
+
+            
             return Result.success(
                 RestaurantTableResponse(
                 restaurant_id=restaurant.get_id(),
                 restaurant_name=restaurant.get_name(),
                 tables=[
                     BaseTableResponse(
-                        id=item.get_id(), 
                         table_number=item.get_table_number(), 
                         seats=item.get_seats(), 
-                        location=item.get_location()) for item in restaurant.get_tables()])
+                        location=item.get_location()) for item in response_tables])
             )
         except ValueError as ve:
             print(ve)

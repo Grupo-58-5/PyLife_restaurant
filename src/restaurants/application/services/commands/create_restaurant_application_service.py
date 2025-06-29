@@ -88,7 +88,6 @@ class CreateRestaurantApplicationService(IApplicationService[CreateRestaurantSch
                     ],
                     tables=[
                         BaseTableResponse(
-                            id= item.get_id(),
                             table_number=item.get_table_number(),
                             seats=item.get_seats(),
                             location=item.get_location()

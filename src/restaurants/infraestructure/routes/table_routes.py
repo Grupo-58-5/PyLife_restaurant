@@ -1,15 +1,15 @@
 
 
 
-from typing import Annotated, Final
+from typing import Annotated, Final, Optional
 from fastapi import APIRouter
-from uuid import uuid4, UUID
+from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlmodel import Session
 
 from src.auth.infraestructure.JWT.JWT_auth_adapter import JWTAuthAdapter
 from src.auth.infraestructure.JWT.dependencies.verify_scope import VerifyScope
-from src.restaurants.application.schemas.entry.create_table_schema import CreateTableSchema, UpdateTableSchema
+from src.restaurants.application.schemas.entry.create_table_schema import CreateTableSchema, TableLocation, UpdateTableSchema
 from src.restaurants.application.schemas.entry.get_table_entry_schema import GetTableEntrySchema
 from src.restaurants.application.schemas.response.table_restaurant_response import BaseTableResponse, RestaurantTableResponse
 from src.restaurants.application.services.commands.create_table_application_service import CreateTableApplicationService
@@ -32,6 +32,8 @@ async def get_table_repository(session: Session = Depends(get_session)) -> Table
 router = APIRouter(prefix="/table", tags=["Tables"])
 auth: Final = JWTAuthAdapter()
 
+# Query parameters are defined directly in the endpoint function signatures.
+
 @router.get(
     "/{restaurant_id}",
     summary="Get table by Restaurant ID",
@@ -39,12 +41,26 @@ auth: Final = JWTAuthAdapter()
     status_code=status.HTTP_200_OK,
     dependencies=[Depends(VerifyScope(["admin:read","admin:write","client:write","client:read"],auth))]
 )
-async def get_table(restaurant_id: UUID, info: Annotated[Result[dict],Depends(auth.decode)],restaurant_repo : RestaurantRepositoryImpl = Depends(get_restaurant_repository), table_repo : TableRepositoryImpl = Depends(get_table_repository) ):
+async def get_table(
+    restaurant_id: UUID,
+    info: Annotated[Result[dict], Depends(auth.decode)],
+    restaurant_repo: RestaurantRepositoryImpl = Depends(get_restaurant_repository),
+    table_repo: TableRepositoryImpl = Depends(get_table_repository),
+    location: TableLocation | None = None,
+    capacity: int = 2
+):
     """
     Retrieve the table for a specific restaurant.
     """
+    print(f"restaurant_id: {restaurant_id}, location: {location}, capacity: {capacity}")
     service = GetAllTableApplicationService(restaurant_repo, table_repo)
-    res = await service.execute(GetTableEntrySchema(restaurant_id=restaurant_id))
+    res = await service.execute(
+        GetTableEntrySchema(
+            restaurant_id=restaurant_id,
+            location=location.value if location else None,
+            capacity=capacity
+        )
+    )
     if res.is_succes():
         return res.result()
     elif res.is_error():

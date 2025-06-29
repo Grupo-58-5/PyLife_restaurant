@@ -61,7 +61,6 @@ class UpdateTableApplicationService(IApplicationService[tuple[UUID, UpdateTableS
             updated_table = updated_table.result()
             return Result.success(
                 BaseTableResponse(
-                    id=updated_table.get_id(),
                     table_number=updated_table.get_table_number(),
                     seats=updated_table.get_seats(),
                     location=updated_table.get_location()
