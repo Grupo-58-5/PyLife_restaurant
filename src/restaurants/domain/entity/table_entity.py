@@ -17,7 +17,7 @@ class TableEntity:
     
     def __init__(self, id: UUID, table_number: int, seats: int, location: TableLocation):
         if not seats or seats < 2 or seats > 12:
-            raise ValueError("Invalid capacity, must be between 2 and 12")
+            raise ValueError("Invalid capacity, must be between 2 and 12 seats")
         self.id = id
         self.table_number = table_number
         self.seats = seats
@@ -55,7 +55,7 @@ class TableEntity:
 
     def set_seats(self, seats: int):
         if not seats or seats < 2 or seats > 12:
-            raise ValueError("Invalid capacity, must be between 2 and 12")
+            raise ValueError("Invalid capacity, must be between 2 and 12 seats")
         self.seats = seats
 
     def set_location(self, location: TableLocation):

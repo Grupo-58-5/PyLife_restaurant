@@ -1,7 +1,7 @@
 
 
 from src.restaurants.application.schemas.entry.get_table_entry_schema import GetTableEntrySchema
-from src.restaurants.application.schemas.response.table_restaurant_response import BaseTableResponse, RestaurantTableResponse
+from src.restaurants.application.schemas.response.table_restaurant_response import TableDetailsResponse, RestaurantTableResponse
 from src.restaurants.domain.repository.i_restaurant_repository import IRestaurantRepository
 from src.restaurants.domain.repository.i_table_repository import ITableRepository
 from src.shared.utils.i_application_service import IApplicationService
@@ -38,11 +38,12 @@ class GetAllTableApplicationService(IApplicationService[GetTableEntrySchema, Res
                 RestaurantTableResponse(
                 restaurant_id=restaurant.get_id(),
                 restaurant_name=restaurant.get_name(),
-                tables=[
-                    BaseTableResponse(
-                        table_number=item.get_table_number(), 
-                        seats=item.get_seats(), 
-                        location=item.get_location()) for item in response_tables])
+                tables=[TableDetailsResponse(
+                            id=item.get_id(),
+                            table_number=item.get_table_number(), 
+                            seats=item.get_seats(), 
+                            location=item.get_location()) for item in response_tables]
+                )
             )
         except ValueError as ve:
             print(ve)

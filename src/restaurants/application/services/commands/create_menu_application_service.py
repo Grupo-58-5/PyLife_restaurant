@@ -26,8 +26,10 @@ class CreateMenuItemApplicationService(IApplicationService[CreateMenuItemSchema,
                     messg=f"Restaurant with ID {data.restaurant_id} does not exist."
                 )
             
+            id_menu = uuid4()
+            
             item = MenuEntity.create(
-                id= uuid4(),
+                id= id_menu,
                 name=data.name,
                 description=data.description,
                 category=data.category
@@ -54,9 +56,12 @@ class CreateMenuItemApplicationService(IApplicationService[CreateMenuItemSchema,
                     category=saved_item.get_category()
                 )
             ))
+        except ValueError as ve:
+        
+            if 'Menu items must not repeat' in str(ve):
+                return Result.failure(code=409, error=ve, messg=str(ve))
+            else:
+                return Result.failure(code=400, error=ve, messg=str(ve))
         except Exception as e:
             print(e)
-            return Result.failure(
-                error=e,
-                messg="An error occurred while creating the menu item."
-            )
+            return Result.failure(error=e,messg="An error occurred while creating the menu item.")

@@ -1,13 +1,13 @@
 from uuid import UUID, uuid4
 from src.restaurants.application.schemas.entry.create_table_schema import CreateTableSchema
-from src.restaurants.application.schemas.response.table_restaurant_response import BaseTableResponse
-from src.restaurants.domain.entity.table_entity import TableEntity, TableLocation
+from src.restaurants.application.schemas.response.table_restaurant_response import TableDetailsResponse
+from src.restaurants.domain.entity.table_entity import TableEntity
 from src.restaurants.domain.repository.i_table_repository import ITableRepository
 from src.restaurants.domain.repository.i_restaurant_repository import IRestaurantRepository
 from src.shared.utils.i_application_service import IApplicationService
 from src.shared.utils.result import Result
 
-class CreateTableApplicationService(IApplicationService[CreateTableSchema, Result[BaseTableResponse]]):
+class CreateTableApplicationService(IApplicationService[CreateTableSchema, Result[TableDetailsResponse]]):
     """
     Service to create a table for a specific restaurant.
     """
@@ -16,7 +16,7 @@ class CreateTableApplicationService(IApplicationService[CreateTableSchema, Resul
         self.table_repository = table_repository
         self.restaurant_repository = restaurant_repository
 
-    async def execute(self, restaurant_id: UUID, data: CreateTableSchema) -> Result[BaseTableResponse]:
+    async def execute(self, restaurant_id: UUID, data: CreateTableSchema) -> Result[TableDetailsResponse]:
         try:
             restaurant = await self.restaurant_repository.get_restaurant_by_id(restaurant_id)
             if restaurant is None:
@@ -45,7 +45,8 @@ class CreateTableApplicationService(IApplicationService[CreateTableSchema, Resul
             
             saved_table = saved_table.result()
             return Result.success(
-                BaseTableResponse(
+                TableDetailsResponse(
+                    id=saved_table.get_id(),
                     table_number=saved_table.get_table_number(),
                     seats=saved_table.get_seats(),
                     location=saved_table.get_location()

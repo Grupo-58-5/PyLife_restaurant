@@ -1,22 +1,22 @@
 
 
 from uuid import UUID
-from src.restaurants.application.schemas.entry.create_table_schema import CreateTableSchema, UpdateTableSchema
-from src.restaurants.application.schemas.response.table_restaurant_response import BaseTableResponse
+from src.restaurants.application.schemas.entry.create_table_schema import UpdateTableSchema
+from src.restaurants.application.schemas.response.table_restaurant_response import TableDetailsResponse
 from src.restaurants.domain.entity.table_entity import TableEntity, TableLocation
 from src.restaurants.domain.repository.i_restaurant_repository import IRestaurantRepository
 from src.restaurants.domain.repository.i_table_repository import ITableRepository
 from src.shared.utils.i_application_service import IApplicationService
 from src.shared.utils.result import Result
 
-class UpdateTableApplicationService(IApplicationService[tuple[UUID, UpdateTableSchema], Result[BaseTableResponse]]):
+class UpdateTableApplicationService(IApplicationService[tuple[UUID, UpdateTableSchema], Result[TableDetailsResponse]]):
 
     def __init__(self, table_repository: ITableRepository, restaurant_repository: IRestaurantRepository):
         super().__init__()
         self.table_repository = table_repository
         self.restaurant_repository = restaurant_repository
 
-    async def execute(self, data: tuple[UUID, UpdateTableSchema]) -> Result[BaseTableResponse]:
+    async def execute(self, data: tuple[UUID, UpdateTableSchema]) -> Result[TableDetailsResponse]:
         try:
             restaurant_id, table_data = data
 
@@ -60,7 +60,8 @@ class UpdateTableApplicationService(IApplicationService[tuple[UUID, UpdateTableS
                 )
             updated_table = updated_table.result()
             return Result.success(
-                BaseTableResponse(
+                TableDetailsResponse(
+                    id=updated_table.get_id(),
                     table_number=updated_table.get_table_number(),
                     seats=updated_table.get_seats(),
                     location=updated_table.get_location()

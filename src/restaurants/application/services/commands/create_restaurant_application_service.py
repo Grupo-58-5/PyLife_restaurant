@@ -95,7 +95,10 @@ class CreateRestaurantApplicationService(IApplicationService[CreateRestaurantSch
                     ]
                 ))
         except ValueError as ve:
+            print(str(ve))
             if "Table with number" in str(ve):
+                return Result.failure(error=ve, messg=str(ve), code=409)
+            elif 'Menu items must not repeat ' in str(ve):
                 return Result.failure(error=ve, messg=str(ve), code=409)
             else:
                 return Result.failure(error=ve, messg=str(ve), code=400)

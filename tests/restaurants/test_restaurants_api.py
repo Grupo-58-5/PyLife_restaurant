@@ -1,29 +1,75 @@
 
 ## * TESTS for restaurants API Endpoints
 
+## ? Verify clients must not create restaurants
+def test_client_must_not_create_restaurant(client, get_token_client):
+    '''
+    Test de Restaurantes:
+        ◦ Asegurar que un cliente no pueda crear un restaurante.
+    '''
+    headers = {"Authorization": f"Bearer {get_token_client}"}
+    body = {
+        "name": "Restaurant Calidad",
+        "address":"Caracas - Las Mercedes",
+        "opening_hour": "12:00:00",
+        "closing_hour":"22:00:00"
+    }
+    response = client.post("/restaurants",json=body, headers=headers)
+
+    print("JSON de respuesta:", response.json())
+
+    assert response.status_code == 403
+
+## ? Verify clients must not update nor delete restaurants
+def test_client_must_not_update_nor_delete_restaurant(client, get_token_client):
+    '''
+    Test de Restaurantes:
+        ◦ Asegurar que un cliente no pueda actualizar un restaurante.
+    '''
+    headers = {"Authorization": f"Bearer {get_token_client}"}
+    body = {
+        "name": "Restaurant Calidad",
+        "address":"Caracas - Las Mercedes",
+        "opening_hour": "12:00:00",
+        "closing_hour":"22:00:00"
+    }
+    response = client.post("/restaurants",json=body, headers=headers)
+    assert response.status_code == 201
+    data = response.json()
+    restaurant_id = data["id"]
+    response = client.put(f"/restaurants/{restaurant_id}",json=body, headers=headers)
+    print("JSON de respuesta:", response.json())
+    assert response.status_code == 403
+    response = client.delete(f"/restaurants/{restaurant_id}", headers=headers)
+    print("JSON de respuesta:", response.json())
+    assert response.status_code == 403
+
+
 ## ? Test for validatinf closing hour must be greater than opening hour
-def test_hour_closing_create_restaurant(client,prepare_db):
+def test_hour_closing_create_restaurant(client, get_token_admin):
+    headers = {"Authorization": f"Bearer {get_token_admin}"}
     body = {
         "name": "Restaurant Calidad",
         "address":"Caracas - Las Mercedes",
         "opening_hour": "12:00:00",
         "closing_hour":"08:00:00"
     }
-    response = client.post("/restaurants",json=body)
+    response = client.post("/restaurants",json=body, headers=headers)
 
     print("JSON de respuesta:", response.json())
 
     assert response.status_code == 400
     data = response.json()
-    assert data["detail"]['msg'] == "Closing hour must be greather than opening hour"
+    assert data["detail"] == "Closing hour must be greather than opening hour"
 
 
 ## ? Test for validating creating a restaurant with a table with 13 seats on restaurant creation
-def test_create_restaurant_with_table_13_seats(client,prepare_db):
+def test_create_restaurant_with_table_13_seats(client, get_token_admin):
     '''
     Test de Mesas:
         ◦ Asegurar que una mesa con capacidad 1 o 13 sea rechazada.
     '''
+    headers = {"Authorization": f"Bearer {get_token_admin}"}
     body = {
         "name": "Restaurant Calidad",
         "address":"Caracas - Las Mercedes",
@@ -37,22 +83,23 @@ def test_create_restaurant_with_table_13_seats(client,prepare_db):
             }
         ]
     }
-    response = client.post("/restaurants",json=body)
+    response = client.post("/restaurants",json=body, headers=headers)
 
     print("JSON de respuesta:", response.json())
 
     assert response.status_code == 400
     data = response.json()
     ##TODO Adjust when the mesj is defined
-    assert data["detail"]['msg'] == "Table must have between 2 and 12 seats, not 13"
+    assert data["detail"] == "Invalid capacity, must be between 2 and 12 seats"
 
 
 ## ? Test for validating creating a restaurant with a table with 1 seat on restaurant creation
-def test_create_restaurant_1_seat_on_table(client,prepare_db):
+def test_create_restaurant_1_seat_on_table(client, get_token_admin):
     '''
     Test de Mesas:
         ◦ Asegurar que una mesa con capacidad 1 o 13 sea rechazada.
     '''
+    headers = {"Authorization": f"Bearer {get_token_admin}"}
     body = {
         "name": "Restaurant Calidad",
         "address":"Caracas - Las Mercedes",
@@ -66,22 +113,22 @@ def test_create_restaurant_1_seat_on_table(client,prepare_db):
             }
         ]
     }
-    response = client.post("/restaurants",json=body)
+    response = client.post("/restaurants",json=body, headers=headers)
 
     print("JSON de respuesta:", response.json())
 
     assert response.status_code == 400
     data = response.json()
-    ##TODO Adjust when the mesj is defined
-    assert data["detail"]['msg'] == "Table must have between 2 and 12 seats"
+    assert data["detail"] == "Invalid capacity, must be between 2 and 12 seats"
 
 
 ## ? Test for validating duplicated table numbers on restaurant creation
-def test_duplicated_number_restaurant_table(client,prepare_db):
+def test_duplicated_number_restaurant_table(client, get_token_admin):
     '''
     Test de Mesas:
         ◦ Asegurar que no se puedan crear dos mesas con el mismo número en un restaurante.
     '''
+    headers = {"Authorization": f"Bearer {get_token_admin}"}
     body = {
         "name": "Restaurant Calidad",
         "address":"Caracas - Las Mercedes",
@@ -100,18 +147,22 @@ def test_duplicated_number_restaurant_table(client,prepare_db):
             },
         ]
     }
-    response = client.post("/restaurants",json=body)
+    response = client.post("/restaurants",json=body, headers=headers)
 
     print("JSON de respuesta:", response.json())
 
     assert response.status_code == 409
     data = response.json()
-    ##TODO Adjust when the mesj is defined
-    assert data["detail"]['msg'] == "Table numbers must not repeat on a restaurant"
+    assert data["detail"] == "Table with number 1 already exists in the restaurant"
 
 
 ## ? Test for validating menu items with same name on restaurant creation
-def test_create_restaurant_menu_items_same_name(client,prepare_db):
+def test_create_restaurant_menu_items_same_name(client, get_token_admin):
+    '''
+    Test de Menu:
+        ◦ Asegurar que no se puedan crear dos items de menú con el mismo nombre en un restaurante.
+    '''
+    headers = {"Authorization": f"Bearer {get_token_admin}"}
     body = {
         "name": "Restaurant Calidad",
         "address":"Caracas - Las Mercedes",
@@ -130,10 +181,8 @@ def test_create_restaurant_menu_items_same_name(client,prepare_db):
             },
         ]
     }
-    response = client.post("/restaurants",json=body)
-    print("JSON de respuesta:", response.json())
+    response = client.post("/restaurants",json=body, headers=headers)
 
     assert response.status_code == 409
     data = response.json()
-    ##TODO Adjust when the mesj is defined
-    assert data["detail"]['msg'] == "Menu items must not repeat on a restaurant, found: Hamburger"
+    assert data["detail"] == "Menu items must not repeat on a restaurant, found: hamburger"
