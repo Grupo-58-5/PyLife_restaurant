@@ -24,7 +24,7 @@ class GetAllTableApplicationService(IApplicationService[GetTableEntrySchema, Res
                 return Result.failure(
                     error=Exception("Restaurant not found"),
                     messg=f"Restaurant with ID {data.restaurant_id} does not exist.",
-                    error_code=404
+                    code=404
                 )
             
             response_tables = []

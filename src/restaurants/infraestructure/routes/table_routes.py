@@ -113,16 +113,16 @@ async def update_table(restaurant_id: UUID, table_id: UUID, table_data: UpdateTa
     return result.result()
 
 ## TODO: Check application service for delete table, must not be referenced in reservations
-# @router.delete(
-#     "/{restaurant_id}/{table_number}",
-#     summary="Delete table by ID",
-#     status_code=status.HTTP_204_NO_CONTENT,
-#     dependencies=[Depends(VerifyScope(["admin:read",'admin:write'],auth))]
-# )
-# async def delete_table(restaurant_id: UUID, table_number: int , info: Annotated[Result[dict],Depends(auth.decode)],restaurant_repo: RestaurantRepositoryImpl = Depends(get_restaurant_repository), table_repo: TableRepositoryImpl = Depends(get_table_repository)):
-#     service = DeleteTableApplicationService(table_repo, restaurant_repo)
-#     result = await service.execute((restaurant_id, table_number))
-#     if result.is_error():
-#         if result.get_error_code() != 500:
-#             raise HTTPException(status_code=result.get_error_code(), detail=result.get_error_message())
-#         raise HTTPException(status_code=500, detail=result.get_error_message())
+@router.delete(
+    "/{restaurant_id}/{table_number}",
+    summary="Delete table by ID",
+    status_code=status.HTTP_204_NO_CONTENT,
+    dependencies=[Depends(VerifyScope(["admin:read",'admin:write'],auth))]
+)
+async def delete_table(restaurant_id: UUID, table_number: int , info: Annotated[Result[dict],Depends(auth.decode)],restaurant_repo: RestaurantRepositoryImpl = Depends(get_restaurant_repository), table_repo: TableRepositoryImpl = Depends(get_table_repository)):
+    service = DeleteTableApplicationService(table_repo, restaurant_repo)
+    result = await service.execute((restaurant_id, table_number))
+    if result.is_error():
+        if result.get_error_code() != 500:
+            raise HTTPException(status_code=result.get_error_code(), detail=result.get_error_message())
+        raise HTTPException(status_code=500, detail=result.get_error_message())

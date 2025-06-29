@@ -36,8 +36,8 @@ class GetRestaurantApplicationService(IApplicationService[UUID, Result[Restauran
                     address=restaurant.get_address(),
                     opening_hour=restaurant.get_opening(),
                     closing_hour=restaurant.get_closing(),
-                    menu_items= [{
-                        "id": item.get_id,
+                    menu= [{
+                        "id": item.get_id(),
                         "name": item.get_name(),
                         "description": item.get_description(),
                         "category": item.get_category()

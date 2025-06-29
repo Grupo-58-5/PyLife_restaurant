@@ -29,5 +29,5 @@ class ITableRepository(ABC):
         pass
 
     @abstractmethod
-    async def delete_item_table(self, table_id: UUID) -> Result[None]:
+    async def delete_item_table_or_disable(self, table_id: UUID) -> Result[None]:
         pass

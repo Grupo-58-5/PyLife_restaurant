@@ -18,6 +18,7 @@ class TableModel(SQLModel, table=True):
     table_number: int = Field(nullable=False, gt=0)
     capacity: int = Field(nullable=False, gt=0)
     location: Optional[str] = Field(default=None, nullable=True)
+    is_active: bool = Field(default=True, nullable=False)
 
     restaurant_id: UUID | None = Field(default=None, foreign_key="restaurants.id")
     restaurant: Optional["RestaurantModel"] = Relationship(back_populates="tables")
