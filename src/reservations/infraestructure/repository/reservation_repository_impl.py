@@ -151,7 +151,7 @@ class ReservationRepositoryImpl(IReservationRepository):
             self.db.add(reservation_model)
             await self.db.commit()
             await self.db.refresh(reservation_model)
-            for dish in reservation.get_dishes():
+            for dish in reservation.get_dishes() or []:
                 pre_order = PreOrder(
                     dish_id=dish.get_menu_id(),
                     reservation_id=reservation.get_id()
