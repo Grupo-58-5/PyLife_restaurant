@@ -1,6 +1,6 @@
 from typing import List, Optional
 from sqlmodel.ext.asyncio.session import AsyncSession
-from sqlmodel import select
+from sqlmodel import UUID, select
 from src.restaurants.domain.repository.i_restaurant_repository import IRestaurantRepository
 from src.restaurants.domain.restaurant import Restaurant
 from src.restaurants.infraestructure.mappers.restaurant_mapper import RestaurantMapper
@@ -15,7 +15,7 @@ class RestaurantRepositoryImpl(IRestaurantRepository):
         super().__init__()
         self.db = db
 
-    async def get_restaurant_by_id(self, restaurant_id: str) -> Optional[Restaurant]:
+    async def get_restaurant_by_id(self, restaurant_id: UUID) -> Optional[Restaurant]:
         try:
             statement = (
                 select(RestaurantModel)
