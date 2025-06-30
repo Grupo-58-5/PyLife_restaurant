@@ -11,12 +11,11 @@ from src.shared.utils.result import Result
 
 class GetActiveReservationsUserService(IApplicationService[GetReservationsByUserSchemaEntry,Result[List[GetReservationsByUserSchemaResponse]]]):
 
-    def __init__(self, repo_reservation: IReservationRepository, repo_table: ITableRepository, repo_restaurant: IRestaurantRepository, repo_menu: IMenuRepository):
+    def __init__(self, repo_reservation: IReservationRepository, repo_table: ITableRepository, repo_restaurant: IRestaurantRepository):
         super().__init__()
         self.repo_reservation = repo_reservation
         self.repo_restaurant = repo_restaurant
         self.repo_table = repo_table
-        self.repo_menu = repo_menu
 
     async def execute(self, data: GetReservationsByUserSchemaEntry) -> Result[List[GetReservationsByUserSchemaResponse]]:
 

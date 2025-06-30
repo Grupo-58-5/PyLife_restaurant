@@ -2,7 +2,7 @@
 
 ## * TESTS for restaurant Menu API Endpoints
 ## ? Test for validating menu items with same name on menu creation
-def test_menu_items_same_name_for_restaurant(client,prepare_db):
+def test_menu_items_same_name_for_restaurant(client, get_token_admin):
     body_restaurant = {
         "name": "Restaurant Calidad",
         "address":"Caracas - Las Mercedes",
@@ -10,7 +10,9 @@ def test_menu_items_same_name_for_restaurant(client,prepare_db):
         "closing_hour":"22:00:00",
     }
 
-    response = client.post("/restaurants",json=body_restaurant)
+    headers = {"Authorization": f"Bearer {get_token_admin}"}
+
+    response = client.post("/restaurants", json=body_restaurant, headers=headers)
     assert response.status_code == 201
     data_restaurant = response.json()
     restaurant_id = data_restaurant["id"]
@@ -20,18 +22,83 @@ def test_menu_items_same_name_for_restaurant(client,prepare_db):
         "category": "Entrance",
     }
 
-    response_menu_1 = client.post(f"/menu/{restaurant_id}",json=body_menu)
+    response_menu_1 = client.post(f"/menu/{restaurant_id}",json=body_menu, headers=headers)
     print("JSON de respuesta:", response.json())
     assert response_menu_1.status_code == 201
 
-    response_menu_2 = client.post(f"/menu/{restaurant_id}",json=body_menu)
+    response_menu_2 = client.post(f"/menu/{restaurant_id}",json=body_menu, headers=headers)
     print("JSON de respuesta:", response.json())
     assert response_menu_2.status_code == 409
     data = response_menu_2.json()
 
     ##TODO Adjust when the mesj is defined
-    assert data["detail"]['msg'] == "Menu items must not repeat on a restaurant, found: Hamburger"
+    assert data["detail"] == "Menu items must not repeat on a restaurant, found: hamburger menu"
 
 
-def test_client_must_not_add_menu(client, prepare_db):
+def test_menu_item_of_another_restaurant_on_reservation_creation(client):
     pass
+
+def test_client_must_not_add_menu(client, get_token_client, get_token_admin):
+    '''
+    Test de Menú:
+        ◦ Asegurar que un cliente no pueda agregar un menú a un restaurante.
+    '''
+    headers = {"Authorization": f"Bearer {get_token_admin}"}
+    body_restaurant = {
+        "name": "Restaurant Calidad",
+        "address":"Caracas - Las Mercedes",
+        "opening_hour": "12:00:00",
+        "closing_hour":"22:00:00",  
+    }
+    response = client.post("/restaurants", json=body_restaurant, headers=headers)
+    assert response.status_code == 201
+    data_restaurant = response.json()
+    restaurant_id = data_restaurant["id"]
+    body_menu = {
+        "name": 'Hamburger Menu',
+        "description": "A menu with hamburgers",
+        "category": "Entrance",
+    }
+    headers_client = {"Authorization": f"Bearer {get_token_client}"}
+    response_menu = client.post(f"/menu/{restaurant_id}", json=body_menu, headers=headers_client)
+    assert response_menu.status_code == 403
+
+def test_client_must_not_update_nor_delete_menu(client, get_token_client, get_token_admin):
+    '''
+    Test de Menú:
+        ◦ Asegurar que un cliente no pueda actualizar ni eliminar un menú de un restaurante.
+    '''
+    headers_client = {"Authorization": f"Bearer {get_token_client}"}
+    headers_admin = {"Authorization": f"Bearer {get_token_admin}"}
+    body_restaurant = {
+        "name": "client test menu",
+        "address":"Caracas - Las Mercedes",
+        "opening_hour": "12:00:00",
+        "closing_hour":"22:00:00",
+    }
+    response_restaurant = client.post("/restaurants",json=body_restaurant, headers=headers_admin)
+    assert response_restaurant.status_code == 201
+    data_restaurant = response_restaurant.json()
+    restaurant_id = data_restaurant["id"]
+    body_menu = {
+        "name": "Menu Test",
+        "description": "Test Menu Description",
+        "category": "Entrance"
+    }
+    response_menu = client.post(f"/menu/{restaurant_id}",json=body_menu, headers=headers_admin)
+    assert response_menu.status_code == 201
+    data_menu = response_menu.json()
+    menu_id = data_menu["id"]  # Assuming the response contains the menu ID
+    body_menu_update = {
+        "name": "Updated Menu",
+        "description": "Updated Description",
+        "category": "Main Course"
+    }
+    response_menu_update = client.put(f"/menu/{restaurant_id}/{menu_id}",json=body_menu_update, headers=headers_client)
+    response_menu_update_json = response_menu_update.json()
+    print("JSON de respuesta:", response_menu_update_json)
+    assert response_menu_update.status_code == 403
+
+    response_menu_delete = client.delete(f"/menu/{restaurant_id}/{menu_id}", headers=headers_client)
+    print("JSON de respuesta:", response_menu_delete.json())
+    assert response_menu_delete.status_code == 403

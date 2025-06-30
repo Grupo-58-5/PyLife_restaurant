@@ -57,21 +57,11 @@ class CreateMenuItemApplicationService(IApplicationService[CreateMenuItemSchema,
                 )
             ))
         except ValueError as ve:
-            if 'Menu item with the same name already exists' in str(ve):
-                return Result.failure(
-                    code=409,
-                    error=ve,
-                    messg=str(ve)
-                )
+        
+            if 'Menu items must not repeat' in str(ve):
+                return Result.failure(code=409, error=ve, messg=str(ve))
             else:
-                return Result.failure(
-                    code=400,
-                    error=ve,
-                    messg=str(ve)
-                )
+                return Result.failure(code=400, error=ve, messg=str(ve))
         except Exception as e:
             print(e)
-            return Result.failure(
-                error=e,
-                messg="An error occurred while creating the menu item."
-            )
+            return Result.failure(error=e,messg="An error occurred while creating the menu item.")

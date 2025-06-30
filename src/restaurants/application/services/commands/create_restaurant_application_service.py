@@ -88,7 +88,6 @@ class CreateRestaurantApplicationService(IApplicationService[CreateRestaurantSch
                     ],
                     tables=[
                         BaseTableResponse(
-                            id= item.get_id(),
                             table_number=item.get_table_number(),
                             seats=item.get_seats(),
                             location=item.get_location()
@@ -96,7 +95,10 @@ class CreateRestaurantApplicationService(IApplicationService[CreateRestaurantSch
                     ]
                 ))
         except ValueError as ve:
+            print(str(ve))
             if "Table with number" in str(ve):
+                return Result.failure(error=ve, messg=str(ve), code=409)
+            elif 'Menu items must not repeat ' in str(ve):
                 return Result.failure(error=ve, messg=str(ve), code=409)
             else:
                 return Result.failure(error=ve, messg=str(ve), code=400)

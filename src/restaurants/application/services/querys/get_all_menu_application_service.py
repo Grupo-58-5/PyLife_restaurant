@@ -33,7 +33,7 @@ class GetAllMenuApplicationService(IApplicationService[GetMenuEntrySchema, Resul
                 RestaurantMenuResponse(
                 restaurant_id=restaurant.get_id(),
                 restaurant_name=restaurant.get_name(),
-                menu_items=[MenuItemBase(id=item.get_id(), name=item.get_name(), description=item.get_description(), category=item.get_category()) for item in restaurant.get_menu()]
+                menu=[MenuItemBase(id=item.get_id(), name=item.get_name(), description=item.get_description(), category=item.get_category()) for item in restaurant.get_menu()]
             ))
 
         except Exception as e:

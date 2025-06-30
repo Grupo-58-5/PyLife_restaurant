@@ -7,6 +7,7 @@ from src.restaurants.infraestructure.mappers.restaurant_mapper import Restaurant
 from src.restaurants.infraestructure.model.restaurant_model import RestaurantModel
 from src.shared.utils.result import Result
 from sqlalchemy.orm import selectinload
+from src.restaurants.infraestructure.model.table_model import TableModel
 
 
 class RestaurantRepositoryImpl(IRestaurantRepository):
@@ -22,7 +23,7 @@ class RestaurantRepositoryImpl(IRestaurantRepository):
                 .where(RestaurantModel.id == restaurant_id)
                 .options(
                     selectinload(RestaurantModel.menu_items),
-                    selectinload(RestaurantModel.tables)
+                    selectinload(RestaurantModel.tables.and_(TableModel.is_active == True))
                 )
             )
             result = await self.db.exec(statement)  # ¡Usa execute, no exec!

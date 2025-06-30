@@ -24,3 +24,8 @@ class ReservationSchemaEntry(BaseModel):
     def duration_hours(self) -> float:
         """Calculate the duration in hours."""
         return (self.finish_time - self.start_time).total_seconds() / 3600
+    
+
+class ChangeStatusSchemaEntry(BaseModel):
+    """Schema for changing the status of a reservation."""
+    status: ReservationStatus = Field(..., description="New status for the reservation.")
