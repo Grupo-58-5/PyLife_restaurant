@@ -35,12 +35,12 @@ class CreateReservationService(IApplicationService[ReservationSchemaEntry, Resul
 
             pre_order: List[ReservationDishVO] = []
 
-            for menu_id in data.dishes:
-                item = next((i for i in restaurant.get_menu() if i.get_id() == menu_id), None)
+            for menu_id in data.dishes or []:
+                item = next((i for i in restaurant.get_menu() if i.get_id == menu_id), None)
 
                 if item is None:
                     return Result[ReservationSchemaResponse].failure(Exception,f'Dish #{menu_id} does not belong to the restaurant menu)',400) 
-                pre_order.append(ReservationDishVO.create(menu_id=item.get_id(),name=item.get_name()))
+                pre_order.append(ReservationDishVO.create(menu_id=item.get_id,name=item.get_name()))
 
             verify_reservation: Result[bool] = await self.repository.verify_reservations_by_date_and_table(
                 restaurant_id=data.restaurant_id,

@@ -14,4 +14,4 @@ class RestaurantMenuResponse(BaseModel):
 
     restaurant_id: UUID
     restaurant_name: str
-    menu_items: List[MenuItemBase]
+    menu: List[MenuItemBase]

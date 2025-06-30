@@ -56,6 +56,24 @@ class Reservation:
 
     def get_schedule(self) -> ReservationSchedule:
         return self.reservation_schedule
+    
+    def change_status(self, new_status: ReservationStatus) -> None:
+        if new_status not in ReservationStatus:
+            raise ValueError(f"Invalid status: {new_status}")
+        
+        if self.status == ReservationStatus.CANCELED:
+            raise ValueError("Cannot change the status of a canceled reservation.")
+        
+        if self.status == ReservationStatus.COMPLETED and new_status != ReservationStatus.CANCELED:
+            raise ValueError("Cannot change the status of a completed reservation, only to Canceled.")
+        
+        if self.status == ReservationStatus.PENDING and new_status not in [ReservationStatus.CONFIRMED, ReservationStatus.CANCELED]:
+            raise ValueError("Cannot change the status of a pending reservation, only to Confirmed or Canceled.")
+        
+        if self.status == ReservationStatus.CONFIRMED and new_status not in [ReservationStatus.COMPLETED, ReservationStatus.CANCELED]:
+            raise ValueError("Cannot change the status of a confirmed reservation, only to Completed or Canceled.")
+        
+        self.status = new_status
 
     def cancel_reservation(self) -> None:
         if self.status in [ReservationStatus.PENDING,ReservationStatus.CONFIRMED]:

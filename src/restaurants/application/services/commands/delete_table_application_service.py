@@ -32,6 +32,7 @@ class DeleteTableApplicationService(IApplicationService[tuple[UUID, int], Result
                 if table.get_table_number() == table_number:
                     table_id = table.get_id()
                     break
+
             if table_id is None:
                 return Result.failure(
                     error=ValueError("Table not found"),
@@ -39,12 +40,12 @@ class DeleteTableApplicationService(IApplicationService[tuple[UUID, int], Result
                 )
             
             #? # Delete the table
-            result = await self.table_repository.delete_item_table(table_id)
+            result = await self.table_repository.delete_item_table_or_disable(table_id)
             if result.is_error():
                 return Result.failure(
-                    status_code=404,
                     error=result.error,
-                    messg=result.messg
+                    messg=f"{result.get_error_message()}" if result.error else "Error deleting table",
+                    code=404
                 )
             return Result.success(True)
         except Exception as e:

@@ -6,6 +6,7 @@ from uuid import UUID
 from sqlmodel import Session, select
 from sqlmodel.ext.asyncio.session import AsyncSession
 
+from src.reservations.infraestructure.models.reservation_model import ReservationModel
 from src.restaurants.domain.entity.table_entity import TableEntity
 from src.restaurants.domain.repository.i_table_repository import ITableRepository
 from src.restaurants.domain.restaurant import Restaurant
@@ -31,6 +32,7 @@ class TableRepositoryImpl(ITableRepository):
         statement = (
             select(TableModel)
             .where(TableModel.restaurant_id == restaurant_id)
+            .where(TableModel.is_active == True)  # Assuming we only want active tables
         )
         table_model = (await self.db.exec(statement)).all()
         return [TableMapper.to_domain(t) for t in table_model]
@@ -86,17 +88,31 @@ class TableRepositoryImpl(ITableRepository):
         except Exception as e:
             return Result.failure(error=e, messg="Error updating table")
 
-    async def delete_item_table(self, table_id: UUID) -> Result[bool]:
+    ## ? this will delete the table from the database if it is not used in any reservation
+    async def delete_item_table_or_disable(self, table_id: UUID) -> Result[bool]:
         try:
-            statement = select(TableModel).where(TableModel.id == table_id)
-            table_model = (await self.db.exec(statement)).one_or_none()
+            check_statement = select(ReservationModel).where(ReservationModel.table_id == table_id)
+            reservation_model = (await self.db.exec(check_statement)).one_or_none()
+            result_table = await self.db.exec(select(TableModel).where(TableModel.id == table_id))
+            table_model = result_table.one_or_none()
+            
             if not table_model:
                 return Result.failure(
                     error=ValueError(f"Table with id {table_id} not found"),
-                    messg=f"Table with id {table_id} not found"
+                    messg=f"Table with id {table_id} not found",
+                    code=404
                 )
-            await self.db.delete(table_model)
-            await self.db.commit()
-            return Result.success(True)
+            if reservation_model is not None:
+                #? if the table is used in a reservation, we can disable it instead of deleting
+                
+                table_model.is_active = False  # Assuming there is an is_active field to disable the table
+                self.db.add(table_model)
+                await self.db.commit()
+                return Result.success(True)
+            else:
+                await self.db.delete(table_model)
+                await self.db.commit()
+                return Result.success(True)
         except Exception as e:
+            print('Error aqui: ', e)
             return Result.failure(error=e, messg="Error deleting table")

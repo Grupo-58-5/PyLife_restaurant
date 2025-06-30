@@ -151,7 +151,7 @@ class ReservationRepositoryImpl(IReservationRepository):
             self.db.add(reservation_model)
             await self.db.commit()
             await self.db.refresh(reservation_model)
-            for dish in reservation.get_dishes():
+            for dish in reservation.get_dishes() or []:
                 pre_order = PreOrder(
                     dish_id=dish.get_menu_id(),
                     reservation_id=reservation.get_id()
@@ -165,7 +165,32 @@ class ReservationRepositoryImpl(IReservationRepository):
             return Result[Reservation].failure(e,"Failed insert in Reservation Table",500)
 
     async def update_reservation(self, reservation_id: UUID, reservation: Reservation) -> Result[Reservation]:
-        pass
+        try:
+            statement = (
+                select(ReservationModel)
+                .where(
+                    ReservationModel.id == reservation_id
+                )
+                .options(
+                    selectinload(ReservationModel.table),
+                    selectinload(ReservationModel.client),
+                    selectinload(ReservationModel.restaurant),
+                    selectinload(ReservationModel.dishes)
+                )
+            )
+            reservation_model: Optional[ReservationModel] = (await self.db.exec(statement)).one_or_none()
+            if reservation_model is None:
+                return Result[Reservation].failure(BaseException,'Reservation Not Found',404)
+
+            reservation_model.status = reservation.get_status()
+            reservation_model.start_time = reservation.get_schedule().start_time
+            reservation_model.finish_time = reservation.get_schedule().end_time
+            await self.db.commit()
+            await self.db.refresh(reservation_model)
+            print("Reservasion actualizada: ",reservation_model)
+            return Result[Reservation].success(ReservationMapper.to_domain(reservation_model))
+        except BaseException as e:
+            return Result.failure(e,str(e),500)
 
     async def cancel_reservation(self, reservation_id: UUID, reservation: Reservation) -> Result[Reservation]:
         try:
@@ -190,3 +215,52 @@ class ReservationRepositoryImpl(IReservationRepository):
             return Result.failure(e,str(e),500)
 
 
+    ## ? This method will return a list of reservations filtered by status and date 
+    async def get_restaurant_reservations_filtered(self, restaurant_id: UUID, page: int, page_size: int, status: ReservationStatus | None, date: datetime | None) -> list[Reservation]:
+        try:
+            offset = (page - 1) * page_size
+            statement = (
+                select(ReservationModel)
+                .where(
+                    ReservationModel.restaurant_id == restaurant_id,
+                    ReservationModel.status == status.value.upper() if status else True,
+                    ReservationModel.start_time >= date if date else True
+                )
+                .options(
+                    selectinload(ReservationModel.table),
+                    selectinload(ReservationModel.client),
+                    selectinload(ReservationModel.restaurant),
+                    selectinload(ReservationModel.dishes)
+                )
+                .offset(offset)
+                .limit(page_size)
+            )
+            result: Optional[List[ReservationModel]] = (await self.db.exec(statement)).all()
+
+            reservations: List[Reservation] = [ReservationMapper.to_domain(x) for x in result if x is not None]
+            return reservations
+        except BaseException as e:
+            print(f"Error {e}")
+    
+    async def get_reservation_by_id(self, reservation_id: UUID) -> Optional[Reservation]:
+        try:
+            statement = (
+                select(ReservationModel)
+                .where(
+                    ReservationModel.id == reservation_id
+                )
+                .options(
+                    selectinload(ReservationModel.table),
+                    selectinload(ReservationModel.client),
+                    selectinload(ReservationModel.restaurant),
+                    selectinload(ReservationModel.dishes)
+                )
+            )
+            result: Optional[ReservationModel] = (await self.db.exec(statement)).one_or_none()
+            if result is None:
+                return None
+            return ReservationMapper.to_domain(result)
+        except BaseException as e:
+            print(f"Error {e}")
+            return None
+    
