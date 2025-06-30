@@ -190,3 +190,27 @@ class ReservationRepositoryImpl(IReservationRepository):
             return Result.failure(e,str(e),500)
 
 
+    ## ? This method will return a list of reservations filtered by status and date 
+    async def get_restaurant_reservations_filtered(self, restaurant_id: UUID, page: int, page_size: int) -> list[Reservation]:
+        try:
+            offset = (page - 1) * page_size
+            statement = (
+                select(ReservationModel)
+                .where(
+                    ReservationModel.restaurant_id == restaurant_id,
+                )
+                .options(
+                    selectinload(ReservationModel.table),
+                    selectinload(ReservationModel.client),
+                    selectinload(ReservationModel.restaurant),
+                    selectinload(ReservationModel.dishes)
+                )
+                .offset(offset)
+                .limit(page_size)
+            )
+            result: Optional[List[ReservationModel]] = (await self.db.exec(statement)).all()
+
+            reservations: List[Reservation] = [ReservationMapper.to_domain(x) for x in result if x is not None]
+            return reservations
+        except BaseException as e:
+            print(f"Error {e}")
