@@ -1,8 +1,11 @@
+from datetime import datetime
 from typing import List
 from uuid import UUID
 from sqlmodel.ext.asyncio.session import AsyncSession
-from sqlmodel import select
+from sqlmodel import exists, select
 from sqlalchemy.orm import selectinload
+from src.reservations.infraestructure.models.pre_order_model import PreOrder
+from src.reservations.infraestructure.models.reservation_model import ReservationModel
 from src.restaurants.domain.entity.menu_entity import MenuEntity
 from src.restaurants.domain.repository.i_menu_repository import IMenuRepository
 from src.restaurants.infraestructure.mappers.restaurant_mapper import MenuMapper
@@ -73,22 +76,40 @@ class MenuRepositoryImpl(IMenuRepository):
             return Result.failure(error=e, messg="Error updating menu item")
 
 
-    async def delete_item_menu(self, menu_id: UUID) -> Result[MenuEntity]:
+    async def delete_or_disable_menu_item(self, menu_id: UUID) -> Result[bool]:
         try:
-            menu_model = await self.db.get(MenuModel, menu_id)
-            if menu_model is None:
+            # Busca una reserva futura que use ese plato
+            check_statement = select(ReservationModel).join(PreOrder).where(
+                PreOrder.dish_id == menu_id,
+                ReservationModel.status != 'CANCELED'
+            )
+            reservation_model = (await self.db.exec(check_statement)).one_or_none()
+
+            # Busca el plato (menu item)
+            result_menu = await self.db.exec(select(MenuModel).where(MenuModel.id == menu_id))
+            menu_item = result_menu.one_or_none()
+
+            if not menu_item:
                 return Result.failure(
-                    error=ValueError("Menu item not found"),
-                    messg="Menu item does not exist"
+                    error=ValueError(f"Menu item with id {menu_id} not found"),
+                    messg=f"Menu item with id {menu_id} not found",
+                    code=404
                 )
-            
-            self.db.delete(menu_model)
-            await self.db.commit()
-            
-            return Result.success(MenuMapper.to_domain(menu_model))
+
+            if reservation_model is not None:
+                menu_item.available = False
+                self.db.add(menu_item)
+                await self.db.commit()
+                return Result.success(True)
+            else:
+                await self.db.delete(menu_item)
+                await self.db.commit()
+                return Result.success(True)
+
         except Exception as e:
-            print("Error deleting menu item:", e)
-            await self.db.rollback()
-            return Result.failure(error=e, messg='DELETE failed')
+            print('Error aqui: ', e)
+            return Result.failure(error=e, messg="Error deleting or disabling menu item")
+
+
 
         

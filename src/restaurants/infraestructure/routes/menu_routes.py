@@ -67,16 +67,26 @@ async def create_menu_item(restaurant_id: UUID, menu: CreateMenuItemSchema, rest
             raise HTTPException(status_code=500, detail="Unexpected error")
     
 
-@router.delete("/{restaurant_id}", status_code=status.HTTP_200_OK, response_model=MenuItemResponse, summary="Delete Menu Item")    
-async def delete_menu_item(restaurant_id: UUID, menu_id:UUID, restaurant_repo : RestaurantRepositoryImpl = Depends(get_restaurant_repository), menu_repo: MenuRepositoryImpl = Depends(get_menu_repository)):
-
-    service = DeleteMenuApplicationService(restaurant_repo,menu_repo)
-    schema = DeleteMenuSchema(restaurant_id=restaurant_id, menu_id=menu_id)
-    res = await service.execute(schema)
-    if res.is_succes():
-        return res.result()
-    else:
-        raise HTTPException(status_code=400, detail=res.get_error_message())
+@router.delete(
+    "/{restaurant_id}/{menu_id}",
+    summary="Delete menu item by ID",
+    status_code=status.HTTP_204_NO_CONTENT,
+    
+)
+async def delete_menu_item(
+    restaurant_id: UUID,
+    menu_id: UUID,
+    
+    restaurant_repo: RestaurantRepositoryImpl = Depends(get_restaurant_repository),
+    menu_repo: MenuRepositoryImpl = Depends(get_menu_repository)
+):
+    service = DeleteMenuApplicationService(restaurant_repo, menu_repo)
+    result = await service.execute(DeleteMenuSchema(restaurant_id=restaurant_id, menu_id=menu_id))
+    
+    if result.is_error():
+        if result.get_error_code() != 500:
+            raise HTTPException(status_code=result.get_error_code(), detail=result.get_error_message())
+        raise HTTPException(status_code=500, detail=result.get_error_message())
     
 
 @router.put(
