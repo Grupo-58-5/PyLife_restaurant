@@ -47,5 +47,5 @@ class IReservationRepository(ABC):
         pass
     
     @abstractmethod
-    async def get_restaurant_reservations_filtered(self, restaurant_id: UUID, page: int, page_size: int) -> List[Reservation]:
+    async def get_restaurant_reservations_filtered(self, restaurant_id: UUID, page: int, page_size: int, status: ReservationStatus | None, date: datetime | None) -> List[Reservation]:
         pass

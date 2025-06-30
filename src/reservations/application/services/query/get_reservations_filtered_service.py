@@ -33,14 +33,16 @@ class GetReservationsFilteredApplicationService(IApplicationService[tuple[str, G
                 restaurant_id=restaurant_id,
                 page=entry.page,
                 page_size=entry.page_size,
+                status= entry.reservation_status,
+                date= entry.date
             )
 
-            if entry.reservation_status:
-                print(f"Filtering reservations by status: {entry.reservation_status.value}")
-                print(reservations[0].get_status())
-                reservations = [res for res in reservations if res.get_status().value == entry.reservation_status.value]
-            if entry.date:
-                reservations = [res for res in reservations if res.get_schedule().start_time.date() >= entry.date.date()]
+            # if entry.reservation_status:
+            #     print(f"Filtering reservations by status: {entry.reservation_status.value}")
+            #     print(reservations[0].get_status())
+            #     reservations = [res for res in reservations if res.get_status().value == entry.reservation_status.value]
+            # if entry.date:
+            #     reservations = [res for res in reservations if res.get_schedule().start_time.date() >= entry.date.date()]
 
             return Result[AllReservationsResponse].success(
                 AllReservationsResponse(

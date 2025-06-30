@@ -191,13 +191,15 @@ class ReservationRepositoryImpl(IReservationRepository):
 
 
     ## ? This method will return a list of reservations filtered by status and date 
-    async def get_restaurant_reservations_filtered(self, restaurant_id: UUID, page: int, page_size: int) -> list[Reservation]:
+    async def get_restaurant_reservations_filtered(self, restaurant_id: UUID, page: int, page_size: int, status: ReservationStatus | None, date: datetime | None) -> list[Reservation]:
         try:
             offset = (page - 1) * page_size
             statement = (
                 select(ReservationModel)
                 .where(
                     ReservationModel.restaurant_id == restaurant_id,
+                    ReservationModel.status == status.value.upper() if status else True,
+                    ReservationModel.start_time >= date if date else True
                 )
                 .options(
                     selectinload(ReservationModel.table),
