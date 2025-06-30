@@ -31,7 +31,7 @@ class IRestaurantRepository(ABC):
         pass
 
     @abstractmethod
-    def delete_restaurant(self, restaurant_id: UUID) -> None:
+    def delete_restaurant_by_id(self, restaurant_id: UUID) -> Result[None]:
         pass
 
     # @abstractmethod

@@ -1,10 +1,12 @@
 from typing import Annotated, Final
+from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException, status
 
 from sqlmodel.ext.asyncio.session import AsyncSession
 from src.auth.infraestructure.JWT.JWT_auth_adapter import JWTAuthAdapter
 from src.auth.infraestructure.JWT.dependencies.verify_scope import VerifyScope
 from src.restaurants.application.services.commands.create_restaurant_application_service import CreateRestaurantApplicationService
+from src.restaurants.application.services.commands.delete_restaurant_application_service import DeleteRestaurantApplicationService
 from src.restaurants.application.services.querys.get_all_restaurant_application_sevice import GetAllRestaurantApplicationService
 from src.restaurants.infraestructure.repository.restaurant_repository_impl import RestaurantRepositoryImpl
 from src.restaurants.application.schemas.entry.resaurant_schema_entry import CreateRestaurantSchema
@@ -55,3 +57,20 @@ async def create_restaurant(info: Annotated[Result[dict],Depends(auth.decode)], 
         else:
             raise HTTPException(status_code=500, detail="Unexpected error")
     return res.result()
+
+
+@router.delete(
+    "/{restaurant_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+    dependencies=[Depends(VerifyScope(["admin:write"], auth))]
+)
+async def delete_restaurant(restaurant_id: UUID, info: Annotated[Result[dict], Depends(auth.decode)],repo: RestaurantRepositoryImpl = Depends(get_repository)):
+    """
+    Delete a restaurant by ID (accessible to administrators only).
+    """
+    service = DeleteRestaurantApplicationService(repo)
+    res = await service.execute(restaurant_id)
+    if res.is_error():
+        if res.get_error_code() != 500:
+            raise HTTPException(status_code=res.get_error_code() or 500, detail=res.get_error_message())
+        raise HTTPException(status_code=500, detail=res.get_error_message())
