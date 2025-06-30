@@ -130,16 +130,15 @@ class ReservationRepositoryImpl(IReservationRepository):
                 .options(
                     selectinload(ReservationModel.table),
                     selectinload(ReservationModel.client),
-                    selectinload(ReservationModel.restaurant)
+                    selectinload(ReservationModel.restaurant),
+                    selectinload(ReservationModel.dishes)
                 )
             )
             result: Optional[ReservationModel] = (await self.db.exec(statement)).one_or_none()
             if result is None:
                 return Result[Reservation].failure(BaseException,'Reservation Not Found',404)
-            print("Reservation: ",result)
 
             reservations: Reservation = ReservationMapper.to_domain(result)
-
             return Result[Reservation].success(reservations)
         except BaseException as e:
             print(f"Error {e}")
@@ -177,14 +176,14 @@ class ReservationRepositoryImpl(IReservationRepository):
                 .options(
                     selectinload(ReservationModel.table),
                     selectinload(ReservationModel.client),
-                    selectinload(ReservationModel.restaurant)
+                    selectinload(ReservationModel.restaurant),
+                    selectinload(ReservationModel.dishes)
                 )
             )
             reservation_model: Optional[ReservationModel] = (await self.db.exec(statement)).one_or_none()
             reservation_model.status = reservation.get_status()
             await self.db.commit()
             await self.db.refresh(reservation_model)
-            print("Reservasion actualizada: ",reservation_model)
             return Result[Reservation].success(ReservationMapper.to_domain(reservation_model))
         except BaseException as e:
             return Result.failure(e,str(e),500)
