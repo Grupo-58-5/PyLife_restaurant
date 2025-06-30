@@ -10,10 +10,11 @@ from src.auth.infraestructure.repository.user_repository_impl import UserReposit
 from src.reservations.application.schemas.entry.cancel_reservation_schema_entry import CancelReservationSchemaEntry
 from src.reservations.application.schemas.entry.get_application_schema_entry import GetReservationsSchemaEntry
 from src.reservations.application.schemas.entry.get_reservations_by_user_schema_entry import GetReservationsByUserSchemaEntry
-from src.reservations.application.schemas.entry.reservation_schema_entry import ReservationSchemaEntry, ReservationStatus
+from src.reservations.application.schemas.entry.reservation_schema_entry import ChangeStatusSchemaEntry, ReservationSchemaEntry, ReservationStatus
 from src.reservations.application.schemas.response.get_reservations_by_user_schema_response import GetReservationsByUserSchemaResponse
-from src.reservations.application.schemas.response.reservation_schema_response import AllReservationsResponse, ReservationSchemaResponse
+from src.reservations.application.schemas.response.reservation_schema_response import AllReservationsResponse, ReservationResponse, ReservationSchemaResponse
 from src.reservations.application.services.command.cancel_reservation_service import CancelReservationService
+from src.reservations.application.services.command.change_status_reservation_service import ChangeReservationStatusApplicationService
 from src.reservations.application.services.command.create_reservation_service import CreateReservationService
 from src.reservations.application.services.query.get_active_reservations_user_service import GetActiveReservationsUserService
 from src.reservations.application.services.query.get_reservations_filtered_service import GetReservationsFilteredApplicationService
@@ -180,6 +181,31 @@ async def get_restaurant_reservations(
     else:
         return response.result()
 
-async def change_status_reservation():
-    pass
+@router.patch(
+    '/admin/change_status/{reservation_id}',
+    response_model=ReservationSchemaResponse,
+    status_code=status.HTTP_202_ACCEPTED,
+    dependencies=[Depends(VerifyScope(["admin:read","admin:write"],JWTAuthAdapter()))],
+    description="Change the status of a reservation",
+    responses={
+        400: {"description": "Invalid data"},
+        403: {"description": "Forbidden"},
+        500: {"description": "Internal Error"}
+    }
+)
+async def change_status_reservation(
+    info: Annotated[Result[dict], Depends(auth.decode)],
+    reservation_id: UUID,
+    query: ChangeStatusSchemaEntry = Depends(),
+    repo_reservation: ReservationRepositoryImpl = Depends(get_repository_reservation),
+):
+    
+    service = ChangeReservationStatusApplicationService(repo_reservation)
+    res: Result[ReservationSchemaResponse] = await service.execute(
+        data=[reservation_id, query]
+    )
+    if res.is_error():
+        raise HTTPException(status_code=res.get_error_code(), detail=res.get_error_message())
+    else:
+        return res.result()
 
