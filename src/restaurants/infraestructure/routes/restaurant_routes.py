@@ -63,8 +63,8 @@ async def create_restaurant(info: Annotated[Result[dict],Depends(auth.decode)], 
 @router.patch(
     "/{restaurant_id}",
     summary="Update restaurant by ID",
-    status_code=status.HTTP_200_OK,
-    response_model=RestaurantDetailResponse,
+    status_code=status.HTTP_202_ACCEPTED,
+    response_model=BaseRestaurantResponse,
     dependencies=[Depends(VerifyScope(["admin:write", "admin:read"], auth))]
 )
 async def update_restaurant(
@@ -75,12 +75,6 @@ async def update_restaurant(
 ):
     
     service = UpdateRestaurantApplicationService(restaurant_repo)
-    update_data = UpdateRestaurantSchema(
-        name=update_data.name if update_data.name is not None else None,
-        address=update_data.address if update_data.address is not None else None,
-        opening_time=update_data.opening_time if update_data.opening_time is not None else None,
-        closing_time=update_data.closing_time if update_data.closing_time is not None else None
-    )
 
     result = await service.execute([restaurant_id, update_data])
 

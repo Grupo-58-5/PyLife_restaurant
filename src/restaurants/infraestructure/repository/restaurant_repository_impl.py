@@ -22,16 +22,7 @@ class RestaurantRepositoryImpl(IRestaurantRepository):
 
     async def get_restaurant_by_id(self, restaurant_id: str) -> Optional[Restaurant]:
         try:
-            statement = (
-                select(RestaurantModel)
-                .where(RestaurantModel.id == restaurant_id)
-                .options(
-                    selectinload(RestaurantModel.menu_items),
-                    selectinload(RestaurantModel.tables.and_(TableModel.is_active == True))
-                )
-            )
-            result = await self.db.exec(statement)  # ¡Usa execute, no exec!
-            model = result.one_or_none()
+            model = await self.get_restaurant_model(restaurant_id)
             if model is None:
                 return None
             return RestaurantMapper.to_domain(model)
@@ -83,7 +74,7 @@ class RestaurantRepositoryImpl(IRestaurantRepository):
                     error=ValueError(f"Restaurant with id {restaurant.get_id()} not found"),
                     messg=f"Restaurant with id {restaurant.get_id()} not found"
                 )
-
+            print("Todo bien")
             restaurant_model.name = restaurant.get_name()
             restaurant_model.location = restaurant.get_address()
             restaurant_model.opening_time = restaurant.get_opening()
@@ -94,8 +85,8 @@ class RestaurantRepositoryImpl(IRestaurantRepository):
             self.db.add(restaurant_model)
             await self.db.commit()
             await self.db.refresh(restaurant_model)
-
-            return Result.success(RestaurantMapper.to_model(restaurant_model))
+            print("Actualizado")
+            return Result[Restaurant].success(restaurant)
         except Exception as e:
             return Result.failure(error=e, messg=f"Error updating restaurant: {str(e)}")
 
@@ -109,12 +100,13 @@ class RestaurantRepositoryImpl(IRestaurantRepository):
                     messg=f"Restaurant with ID {restaurant_id} does not exist."
                 )
 
-            tables = (await self.db.exec(select(TableModel).where(TableModel.restaurant_id == restaurant_id))).all()
-            if tables:
-                return Result.failure(
-                error=ValueError("The restaurant cannot be deleted because it has associated tables."),
-                messg="The restaurant cannot be deleted because it has associated tables. Delete the tables first."
-            )
+            # ? This logic should be in application
+            # tables = (await self.db.exec(select(TableModel).where(TableModel.restaurant_id == restaurant_id))).all()
+            # if tables:
+            #     return Result.failure(
+            #     error=ValueError("The restaurant cannot be deleted because it has associated tables."),
+            #     messg="The restaurant cannot be deleted because it has associated tables. Delete the tables first."
+            # )
 
             await self.db.delete(restaurant)
             await self.db.commit()

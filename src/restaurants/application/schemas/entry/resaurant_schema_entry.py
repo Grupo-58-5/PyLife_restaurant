@@ -1,6 +1,5 @@
 from typing import List
-from uuid import uuid4,UUID
-from pydantic import BaseModel, Field, field_validator, root_validator
+from pydantic import BaseModel, Field
 from datetime import time
 
 from src.restaurants.application.schemas.entry.create_table_schema import CreateTableSchema
@@ -48,8 +47,8 @@ class UpdateRestaurantSchema(BaseModel):
 
     name: str | None = Field(default=None)
     address: str | None = Field(default=None, description="Restaurant address.")
-    opening_time: time | None = Field(default=None, description="Opening time.")
-    closing_time: time | None = Field(default=None, description="Closing time.")
+    opening_time: time | None = Field(default=time(8, 0), description="Opening time.")
+    closing_time: time | None = Field(default=time(12,0), description="Closing time.")
 
     def validate_schedule(cls, values):
         opening = values.get("opening_time")

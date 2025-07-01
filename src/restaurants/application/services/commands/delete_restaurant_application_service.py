@@ -18,13 +18,20 @@ class DeleteRestaurantApplicationService(IApplicationService[UUID, Result[bool]]
                     error=ValueError("Restaurant not found"),
                     messg=f"Restaurant with ID {restaurant_id} does not exist."
                 )
+            
+            if len(restaurant.get_tables()) > 0:
+                return Result[bool].failure(
+                    code=406,
+                    messg="The restaurant cannot be deleted because it has associated tables. Delete the tables first.",
+                    error=ValueError('Restaurant with associated tables, cannot be deleted')
+                )
 
             result = await self.restaurant_repository.delete_restaurant_by_id(restaurant_id)
             if result.is_error():
                 return Result.failure(
-                    code=404,
+                    code=500,
                     error=result.error,
-                    messg=result.messg
+                    messg='Strange Error deleting restaurant'
                 )
             return Result.success(True)
         except Exception as e:

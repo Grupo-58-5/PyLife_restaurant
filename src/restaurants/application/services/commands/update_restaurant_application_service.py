@@ -21,7 +21,7 @@ class UpdateRestaurantApplicationService(IApplicationService[tuple[UUID, UpdateR
             # Obtener restaurante actual
             restaurant = await self.restaurant_repository.get_restaurant_by_id(restaurant_id)
             if restaurant is None:
-                return Result.failure(
+                return Result[BaseRestaurantResponse].failure(
                     error=ValueError("Restaurant not found"),
                     messg=f"Restaurant with ID {restaurant_id} does not exist."
                 )
@@ -36,22 +36,21 @@ class UpdateRestaurantApplicationService(IApplicationService[tuple[UUID, UpdateR
 
             result = await self.restaurant_repository.update_restaurant(restaurant)
             if result.is_error():
-                return Result.failure(
+                return Result[BaseRestaurantResponse].failure(
                     error=result.error,
                     messg=f"Error updating restaurant: {str(result.error) if result.error else 'Unknown error'}"
                 )
             
             updated = result.result()
-            return Result.success(BaseRestaurantResponse(
-                print("-----TYPT: ", type(updated)),
+            return Result[BaseRestaurantResponse].success(BaseRestaurantResponse(
                 id=updated.get_id(),
                 name=updated.get_name(),
-                location=updated.get_address(),
-                opening_time=updated.get_opening(),
-                closing_time=updated.get_closing(),
+                address=updated.get_address(),
+                opening_hour=updated.get_opening(),
+                closing_hour=updated.get_closing(),
             ))
 
         except ValueError as ve:
-            return Result.failure(error=ve, messg=str(ve), code=400)
+            return Result[BaseRestaurantResponse].failure(error=ve, messg=str(ve), code=400)
         except Exception as e:
-            return Result.failure(error=Exception(str(e)), messg=str(e), code=500)
+            return Result[BaseRestaurantResponse].failure(error=Exception(str(e)), messg=str(e), code=500)
