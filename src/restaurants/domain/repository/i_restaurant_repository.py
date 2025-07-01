@@ -27,7 +27,7 @@ class IRestaurantRepository(ABC):
         pass
 
     @abstractmethod
-    def update_restaurant(self, restaurant_id: UUID, restaurant: Restaurant) -> Restaurant:
+    def update_restaurant(self, restaurant_id: UUID, restaurant: Restaurant) -> Result[Restaurant]:
         pass
 
     @abstractmethod

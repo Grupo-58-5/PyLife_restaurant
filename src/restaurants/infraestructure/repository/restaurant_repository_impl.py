@@ -21,16 +21,7 @@ class RestaurantRepositoryImpl(IRestaurantRepository):
 
     async def get_restaurant_by_id(self, restaurant_id: str) -> Optional[Restaurant]:
         try:
-            statement = (
-                select(RestaurantModel)
-                .where(RestaurantModel.id == restaurant_id)
-                .options(
-                    selectinload(RestaurantModel.menu_items),
-                    selectinload(RestaurantModel.tables)
-                )
-            )
-            result = await self.db.exec(statement)  # ¡Usa execute, no exec!
-            model = result.one_or_none()
+            model = await self.get_restaurant_model(restaurant_id)
             if model is None:
                 return None
             return RestaurantMapper.to_domain(model)
@@ -74,13 +65,34 @@ class RestaurantRepositoryImpl(IRestaurantRepository):
             await self.db.rollback()
             return Result.failure(error=e, messg=f"Error creating restaurant: {str(e)}")
         
-    async def update_restaurant(self, restaurant: Restaurant) -> Restaurant:
-        pass
+    async def update_restaurant(self, restaurant: Restaurant) -> Result[Restaurant]:
+        try:
+            restaurant_model = await self.get_restaurant_model(restaurant.get_id())
+            if not restaurant_model:
+                return Result.failure(
+                    error=ValueError(f"Restaurant with id {restaurant.get_id()} not found"),
+                    messg=f"Restaurant with id {restaurant.get_id()} not found"
+                )
+
+            restaurant_model.name = restaurant.get_name()
+            restaurant_model.location = restaurant.get_address()
+            restaurant_model.opening_time = restaurant.get_opening()
+            restaurant_model.closing_time = restaurant.get_closing()
+
+            print('Este es el restaurant a guardar:',restaurant_model)
+
+            self.db.add(restaurant_model)
+            await self.db.commit()
+            await self.db.refresh(restaurant_model)
+
+            return Result.success(RestaurantMapper.to_model(restaurant_model))
+        except Exception as e:
+            return Result.failure(error=e, messg=f"Error updating restaurant: {str(e)}")
+
 
     async def delete_restaurant_by_id(self, restaurant_id: UUID) -> Result[bool]:
         try:
-            statement = select(RestaurantModel).where(RestaurantModel.id == restaurant_id)
-            restaurant = (await self.db.exec(statement)).one_or_none()
+            restaurant = await self.get_restaurant_model(restaurant_id)
             if not restaurant:
                 return Result.failure(
                     error=ValueError("Restaurant not found"),
@@ -99,6 +111,17 @@ class RestaurantRepositoryImpl(IRestaurantRepository):
             return Result.success(True)
         except Exception as e:
             return Result.failure(error=e, messg="Error deleting restaurant")
+        
+    async def get_restaurant_model(self, id: UUID) -> Optional[RestaurantModel]:
+        statement = (
+                select(RestaurantModel)
+                .where(RestaurantModel.id == id)
+                .options(
+                    selectinload(RestaurantModel.menu_items),
+                    selectinload(RestaurantModel.tables)
+                )
+            )
+        return (await self.db.exec(statement)).one_or_none()
 
 
 
