@@ -66,7 +66,7 @@ class Restaurant:
             new_name = menu_item.get_name().strip().lower()
             existing_names = [item.get_name().strip().lower() for item in self.menu]
             if new_name in existing_names:
-                raise ValueError("Menu item with the same name already exists in the restaurant's menu")
+                raise ValueError(f"Menu items must not repeat on a restaurant, found: {new_name}")
             
         if self.menu is None:
             self.menu = []
@@ -80,7 +80,7 @@ class Restaurant:
         for item in menu_items:
             name_clean = item.get_name().strip().lower()
             if name_clean in existing_names or name_clean in new_names:
-                raise ValueError(f"Duplicate menu item name found: '{item.get_name()}'")
+                raise ValueError(f"Menu items must not repeat on a restaurant, found: {item.get_name()}'")
             new_names.add(name_clean)
 
         self.menu.extend(menu_items)
@@ -108,7 +108,7 @@ class Restaurant:
         for table in tables:
             table_number = table.get_table_number()
             if table_number in existing_numbers or table_number in new_numbers:
-                raise ValueError(f"Duplicate table number found: {table_number}")
+                raise ValueError(f"Table with number { table_number } already exists in the restaurant")
             new_numbers.add(table_number)
 
         self.tables.extend(tables)

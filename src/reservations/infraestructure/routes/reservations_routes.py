@@ -8,13 +8,16 @@ from src.auth.infraestructure.JWT.JWT_auth_adapter import JWTAuthAdapter
 from src.auth.infraestructure.JWT.dependencies.verify_scope import VerifyScope
 from src.auth.infraestructure.repository.user_repository_impl import UserRepositoryImpl
 from src.reservations.application.schemas.entry.cancel_reservation_schema_entry import CancelReservationSchemaEntry
+from src.reservations.application.schemas.entry.get_application_schema_entry import GetReservationsSchemaEntry
 from src.reservations.application.schemas.entry.get_reservations_by_user_schema_entry import GetReservationsByUserSchemaEntry
-from src.reservations.application.schemas.entry.reservation_schema_entry import ReservationSchemaEntry
+from src.reservations.application.schemas.entry.reservation_schema_entry import ChangeStatusSchemaEntry, ReservationSchemaEntry, ReservationStatus
 from src.reservations.application.schemas.response.get_reservations_by_user_schema_response import GetReservationsByUserSchemaResponse
-from src.reservations.application.schemas.response.reservation_schema_response import ReservationSchemaResponse
+from src.reservations.application.schemas.response.reservation_schema_response import AllReservationsResponse, ReservationResponse, ReservationSchemaResponse
 from src.reservations.application.services.command.cancel_reservation_service import CancelReservationService
+from src.reservations.application.services.command.change_status_reservation_service import ChangeReservationStatusApplicationService
 from src.reservations.application.services.command.create_reservation_service import CreateReservationService
 from src.reservations.application.services.query.get_active_reservations_user_service import GetActiveReservationsUserService
+from src.reservations.application.services.query.get_reservations_filtered_service import GetReservationsFilteredApplicationService
 from src.reservations.infraestructure.repository.reservation_repository_impl import ReservationRepositoryImpl
 from src.reservations.infraestructure.schemas.entry.create_reservation_schema_entry import CreateReservationSchemaEntry
 from src.restaurants.infraestructure.repository.menu_repository_impl import MenuRepositoryImpl
@@ -71,14 +74,14 @@ async def create_reservation(
     info: Annotated[Result[dict],Depends(auth.decode)],
     body: CreateReservationSchemaEntry,
     repo_reservation: ReservationRepositoryImpl = Depends(get_repository_reservation),
-    repo_menu: MenuRepositoryImpl = Depends(get_repository_menu)
+    repo_restaurant: RestaurantRepositoryImpl = Depends(get_repository_restaurant)
 ):
     client_id: str = info.value.get("id")
     data = ReservationSchemaEntry.model_validate({**body.model_dump(), "client_id": client_id})
 
     service = CreateReservationService(
         reservation_repository=repo_reservation,
-        repo_menu=repo_menu,
+        restaurant_repository=repo_restaurant
     )
 
     result = await service.execute(data)
@@ -133,8 +136,7 @@ async def get_client_reservations(
     query: UserAllSchemaEntry = Depends(),
     repo_reservation: ReservationRepositoryImpl = Depends(get_repository_reservation),
     repo_restaurant: RestaurantRepositoryImpl = Depends(get_repository_restaurant),
-    repo_table: TableRepositoryImpl = Depends(get_repository_table),
-    repo_menu: MenuRepositoryImpl = Depends(get_repository_menu)
+    repo_table: TableRepositoryImpl = Depends(get_repository_table)
 ):
     client_id: str = info.value.get("id")
     data = GetReservationsByUserSchemaEntry.model_validate({
@@ -144,8 +146,7 @@ async def get_client_reservations(
     service = GetActiveReservationsUserService(
         repo_reservation=repo_reservation,
         repo_restaurant=repo_restaurant,
-        repo_table=repo_table,
-        repo_menu=repo_menu
+        repo_table=repo_table
     )
 
     result = await service.execute(data)
@@ -156,11 +157,55 @@ async def get_client_reservations(
     return result.value
 
 #NOTE: Endpoints para el administrador
-async def get_all_reservations():
-    pass
 
-async def cancel_any_reservation():
-    pass
+@router.get(
+    '/admin/{restaurant_id}',
+    response_model=AllReservationsResponse,
+    status_code=status.HTTP_200_OK,
+    dependencies=[Depends(VerifyScope(["admin:read","admin:write"],JWTAuthAdapter()))],
+    description="Get all reservations with filter options and pagination",
+)
+async def get_restaurant_reservations(
+    restaurant_id: UUID,
+    info: Annotated[Result[dict],Depends(auth.decode)],
+    repo_reservation: ReservationRepositoryImpl = Depends(get_repository_reservation),
+    repo_restaurant: RestaurantRepositoryImpl = Depends(get_repository_restaurant),
+    query: GetReservationsSchemaEntry = Depends(),
+):
+    service = GetReservationsFilteredApplicationService(restaurant_repo=repo_restaurant, reservation_repo=repo_reservation)
+    response: Result[AllReservationsResponse] = await service.execute(
+        data=[restaurant_id, query]
+    )
+    if response.is_error():
+        raise HTTPException(status_code=response.get_error_code(), detail=response.get_error_message())
+    else:
+        return response.result()
 
-async def get_filter_reservations():
-    pass
+@router.patch(
+    '/admin/change_status/{reservation_id}',
+    response_model=ReservationSchemaResponse,
+    status_code=status.HTTP_202_ACCEPTED,
+    dependencies=[Depends(VerifyScope(["admin:read","admin:write"],JWTAuthAdapter()))],
+    description="Change the status of a reservation",
+    responses={
+        400: {"description": "Invalid data"},
+        403: {"description": "Forbidden"},
+        500: {"description": "Internal Error"}
+    }
+)
+async def change_status_reservation(
+    info: Annotated[Result[dict], Depends(auth.decode)],
+    reservation_id: UUID,
+    query: ChangeStatusSchemaEntry = Depends(),
+    repo_reservation: ReservationRepositoryImpl = Depends(get_repository_reservation),
+):
+    
+    service = ChangeReservationStatusApplicationService(repo_reservation)
+    res: Result[ReservationSchemaResponse] = await service.execute(
+        data=[reservation_id, query]
+    )
+    if res.is_error():
+        raise HTTPException(status_code=res.get_error_code(), detail=res.get_error_message())
+    else:
+        return res.result()
+

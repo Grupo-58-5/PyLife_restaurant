@@ -1,17 +1,17 @@
 
 
 
-from typing import Annotated, Final
+from typing import Annotated, Final, Optional
 from fastapi import APIRouter
-from uuid import uuid4, UUID
+from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlmodel import Session
 
 from src.auth.infraestructure.JWT.JWT_auth_adapter import JWTAuthAdapter
 from src.auth.infraestructure.JWT.dependencies.verify_scope import VerifyScope
-from src.restaurants.application.schemas.entry.create_table_schema import CreateTableSchema, UpdateTableSchema
+from src.restaurants.application.schemas.entry.create_table_schema import CreateTableSchema, TableLocation, UpdateTableSchema
 from src.restaurants.application.schemas.entry.get_table_entry_schema import GetTableEntrySchema
-from src.restaurants.application.schemas.response.table_restaurant_response import BaseTableResponse, RestaurantTableResponse
+from src.restaurants.application.schemas.response.table_restaurant_response import BaseTableResponse, RestaurantTableResponse, TableDetailsResponse
 from src.restaurants.application.services.commands.create_table_application_service import CreateTableApplicationService
 from src.restaurants.application.services.commands.delete_table_application_service import DeleteTableApplicationService
 from src.restaurants.application.services.commands.update_table_application_service import UpdateTableApplicationService
@@ -32,6 +32,8 @@ async def get_table_repository(session: Session = Depends(get_session)) -> Table
 router = APIRouter(prefix="/table", tags=["Tables"])
 auth: Final = JWTAuthAdapter()
 
+# Query parameters are defined directly in the endpoint function signatures.
+
 @router.get(
     "/{restaurant_id}",
     summary="Get table by Restaurant ID",
@@ -39,12 +41,26 @@ auth: Final = JWTAuthAdapter()
     status_code=status.HTTP_200_OK,
     dependencies=[Depends(VerifyScope(["admin:read","admin:write","client:write","client:read"],auth))]
 )
-async def get_table(restaurant_id: UUID, info: Annotated[Result[dict],Depends(auth.decode)],restaurant_repo : RestaurantRepositoryImpl = Depends(get_restaurant_repository), table_repo : TableRepositoryImpl = Depends(get_table_repository) ):
+async def get_table(
+    restaurant_id: UUID,
+    info: Annotated[Result[dict], Depends(auth.decode)],
+    restaurant_repo: RestaurantRepositoryImpl = Depends(get_restaurant_repository),
+    table_repo: TableRepositoryImpl = Depends(get_table_repository),
+    location: TableLocation | None = None,
+    capacity: int = 2
+):
     """
     Retrieve the table for a specific restaurant.
     """
+    print(f"restaurant_id: {restaurant_id}, location: {location}, capacity: {capacity}")
     service = GetAllTableApplicationService(restaurant_repo, table_repo)
-    res = await service.execute(GetTableEntrySchema(restaurant_id=restaurant_id))
+    res = await service.execute(
+        GetTableEntrySchema(
+            restaurant_id=restaurant_id,
+            location=location.value if location else None,
+            capacity=capacity
+        )
+    )
     if res.is_succes():
         return res.result()
     elif res.is_error():
@@ -59,7 +75,9 @@ async def get_table(restaurant_id: UUID, info: Annotated[Result[dict],Depends(au
 @router.post(
     "/{restaurant_id}",
     summary="Create table for a restaurant",
-    dependencies=[Depends(VerifyScope(["admin:read",'admin:write'],auth))]
+    status_code=status.HTTP_201_CREATED,
+    response_model=TableDetailsResponse,
+    dependencies=[Depends(VerifyScope(["admin:read",'admin:write'], auth))]
 )
 async def create_table(restaurant_id: UUID, table_data: CreateTableSchema, info: Annotated[Result[dict],Depends(auth.decode)],restaurant_repo: RestaurantRepositoryImpl = Depends(get_restaurant_repository), table_repo: TableRepositoryImpl = Depends(get_table_repository) ):
 
@@ -74,8 +92,8 @@ async def create_table(restaurant_id: UUID, table_data: CreateTableSchema, info:
 @router.put(
     "/{restaurant_id}/{table_id}",
     summary="Update table by ID",
-    status_code=status.HTTP_200_OK,
-    response_model=BaseTableResponse,
+    status_code=status.HTTP_202_ACCEPTED,
+    response_model=TableDetailsResponse,
     dependencies=[Depends(VerifyScope(["admin:read",'admin:write'],auth))]
 )
 async def update_table(restaurant_id: UUID, table_id: UUID, table_data: UpdateTableSchema, info: Annotated[Result[dict],Depends(auth.decode)],restaurant_repo: RestaurantRepositoryImpl = Depends(get_restaurant_repository), table_repo: TableRepositoryImpl = Depends(get_table_repository)):
@@ -94,6 +112,7 @@ async def update_table(restaurant_id: UUID, table_id: UUID, table_data: UpdateTa
         raise HTTPException(status_code=500, detail=result.get_error_message())
     return result.result()
 
+## TODO: Check application service for delete table, must not be referenced in reservations
 @router.delete(
     "/{restaurant_id}/{table_number}",
     summary="Delete table by ID",

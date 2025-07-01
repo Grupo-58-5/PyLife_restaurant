@@ -1,7 +1,7 @@
 
 
 from src.restaurants.application.schemas.entry.get_table_entry_schema import GetTableEntrySchema
-from src.restaurants.application.schemas.response.table_restaurant_response import BaseTableResponse, RestaurantTableResponse
+from src.restaurants.application.schemas.response.table_restaurant_response import TableDetailsResponse, RestaurantTableResponse
 from src.restaurants.domain.repository.i_restaurant_repository import IRestaurantRepository
 from src.restaurants.domain.repository.i_table_repository import ITableRepository
 from src.shared.utils.i_application_service import IApplicationService
@@ -24,19 +24,26 @@ class GetAllTableApplicationService(IApplicationService[GetTableEntrySchema, Res
                 return Result.failure(
                     error=Exception("Restaurant not found"),
                     messg=f"Restaurant with ID {data.restaurant_id} does not exist.",
-                    error_code=404
+                    code=404
                 )
+            
+            response_tables = []
+            if data.location is not None: 
+                response_tables = [table for table in restaurant.get_tables() if table.get_location() == data.location.value and table.get_seats() >= data.capacity] 
+            else:
+                response_tables = [table for table in restaurant.get_tables() if table.get_seats() >= data.capacity]
+
             
             return Result.success(
                 RestaurantTableResponse(
                 restaurant_id=restaurant.get_id(),
                 restaurant_name=restaurant.get_name(),
-                tables=[
-                    BaseTableResponse(
-                        id=item.get_id(), 
-                        table_number=item.get_table_number(), 
-                        seats=item.get_seats(), 
-                        location=item.get_location()) for item in restaurant.get_tables()])
+                tables=[TableDetailsResponse(
+                            id=item.get_id(),
+                            table_number=item.get_table_number(), 
+                            seats=item.get_seats(), 
+                            location=item.get_location()) for item in response_tables]
+                )
             )
         except ValueError as ve:
             print(ve)

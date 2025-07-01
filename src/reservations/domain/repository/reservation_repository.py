@@ -1,10 +1,11 @@
 
 from abc import ABC, abstractmethod
 from datetime import datetime
-from typing import List
+from typing import List, Optional
 from uuid import UUID
 
 from src.reservations.domain.reservation import Reservation
+from src.reservations.domain.vo.reservation_status_vo import ReservationStatus
 from src.shared.utils.result import Result
 
 class IReservationRepository(ABC):
@@ -45,5 +46,11 @@ class IReservationRepository(ABC):
     async def cancel_reservation(self, reservation_id: UUID, reservation: Reservation) -> Result[Reservation]:
         pass
     
+    @abstractmethod
+    async def get_restaurant_reservations_filtered(self, restaurant_id: UUID, page: int, page_size: int, status: ReservationStatus | None, date: datetime | None) -> List[Reservation]:
+        pass
 
-
+    @abstractmethod
+    async def get_reservation_by_id(self, reservation_id: UUID) -> Optional[Reservation]:
+        """Get a reservation by its ID."""
+        pass

@@ -11,6 +11,7 @@ from src.restaurants.infraestructure.model.restaurant_model import RestaurantMod
 from src.restaurants.infraestructure.model.table_model import TableModel
 from src.shared.utils.result import Result
 from sqlalchemy.orm import selectinload
+from src.restaurants.infraestructure.model.table_model import TableModel
 
 
 class RestaurantRepositoryImpl(IRestaurantRepository):
@@ -21,7 +22,16 @@ class RestaurantRepositoryImpl(IRestaurantRepository):
 
     async def get_restaurant_by_id(self, restaurant_id: str) -> Optional[Restaurant]:
         try:
-            model = await self.get_restaurant_model(restaurant_id)
+            statement = (
+                select(RestaurantModel)
+                .where(RestaurantModel.id == restaurant_id)
+                .options(
+                    selectinload(RestaurantModel.menu_items),
+                    selectinload(RestaurantModel.tables.and_(TableModel.is_active == True))
+                )
+            )
+            result = await self.db.exec(statement)  # ¡Usa execute, no exec!
+            model = result.one_or_none()
             if model is None:
                 return None
             return RestaurantMapper.to_domain(model)
@@ -79,7 +89,7 @@ class RestaurantRepositoryImpl(IRestaurantRepository):
             restaurant_model.opening_time = restaurant.get_opening()
             restaurant_model.closing_time = restaurant.get_closing()
 
-            print('Este es el restaurant a guardar:',restaurant_model)
+            print('Este es el restaurant a guardar:', restaurant_model)
 
             self.db.add(restaurant_model)
             await self.db.commit()
@@ -118,7 +128,7 @@ class RestaurantRepositoryImpl(IRestaurantRepository):
                 .where(RestaurantModel.id == id)
                 .options(
                     selectinload(RestaurantModel.menu_items),
-                    selectinload(RestaurantModel.tables)
+                    selectinload(RestaurantModel.tables.and_(TableModel.is_active == True))
                 )
             )
         return (await self.db.exec(statement)).one_or_none()

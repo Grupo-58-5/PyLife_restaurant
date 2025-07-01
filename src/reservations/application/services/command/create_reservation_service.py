@@ -20,21 +20,27 @@ class CreateReservationService(IApplicationService[ReservationSchemaEntry, Resul
     def __init__(
         self,
         reservation_repository: IReservationRepository,
-        repo_menu: IMenuRepository
+        restaurant_repository: IRestaurantRepository
     ):
         self.repository = reservation_repository
-        self.repo_menu = repo_menu
+        self.restaurant_repository = restaurant_repository
 
     #TODO: Pre ordernar los menus
     async def execute(self, data: ReservationSchemaEntry) -> Result[ReservationSchemaResponse]:
         try:
 
-            menu: List[ReservationDishVO] = []
-            for menu_id in data.dishes:
-                item = await self.repo_menu.get_menu_resturant(menu_id,data.restaurant_id)
-                if item.is_error() is True:
-                    return Result[ReservationSchemaResponse].failure(item.error,item.get_error_message(),item.get_error_code())
-                menu.append(ReservationDishVO.create(menu_id=item.value.get_id(),name=item.value.get_name()))
+            restaurant = await self.restaurant_repository.get_restaurant_by_id(data.restaurant_id)
+            if restaurant is None:
+                return Result[ReservationSchemaResponse].failure(BaseException,f"Restaurant not found",404)
+
+            pre_order: List[ReservationDishVO] = []
+
+            for menu_id in data.dishes or []:
+                item = next((i for i in restaurant.get_menu() if i.get_id == menu_id), None)
+
+                if item is None:
+                    return Result[ReservationSchemaResponse].failure(Exception,f'Dish #{menu_id} does not belong to the restaurant menu)',400) 
+                pre_order.append(ReservationDishVO.create(menu_id=item.get_id,name=item.get_name()))
 
             verify_reservation: Result[bool] = await self.repository.verify_reservations_by_date_and_table(
                 restaurant_id=data.restaurant_id,
@@ -70,7 +76,7 @@ class CreateReservationService(IApplicationService[ReservationSchemaEntry, Resul
                     start_time=data.start_time.replace(tzinfo=None),
                     end_time=data.finish_time.replace(tzinfo=None)
                 ),
-                menu if len(menu) > 0 else None
+                pre_order if len(pre_order) > 0 else None
             )
 
             result = await self.repository.create_reservation(reservation)
@@ -85,7 +91,7 @@ class CreateReservationService(IApplicationService[ReservationSchemaEntry, Resul
                 start_time = reservation.get_schedule().start_time,
                 finish_time = reservation.get_schedule().end_time,
                 status = reservation.get_status(),
-                pre_order=[PreOrderSchemaResponse(id=item.get_menu_id(),name=item.get_name()) for item in menu] if len(menu) > 0 else None
+                pre_order=[PreOrderSchemaResponse(id=item.get_menu_id(),name=item.get_name()) for item in pre_order] if len(pre_order) > 0 else None
             )
             return Result[ReservationSchemaResponse].success(response)
         except Exception as e:
