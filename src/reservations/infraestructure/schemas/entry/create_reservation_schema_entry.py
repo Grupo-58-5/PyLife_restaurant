@@ -1,5 +1,6 @@
 from uuid import UUID
-from pydantic import BaseModel, Field, field_validator
+from fastapi import HTTPException, status
+from pydantic import BaseModel, Field, field_validator, root_validator, model_validator
 from datetime import datetime
 from enum import Enum
 from typing import List, Optional
@@ -23,17 +24,18 @@ class CreateReservationSchemaEntry(BaseModel):
         """Calculate the duration in hours."""
         return (self.finish_time - self.start_time).total_seconds() / 3600
 
-    @classmethod
-    def validate_reservation(cls, reservation_data: "CreateReservationSchemaEntry"):
+    @model_validator(mode="after")
+    def validate_reservation(self):
         """Validations before confirming a reservation."""
-        if reservation_data.start_time >= reservation_data.finish_time:
-            raise ValueError("Finish time must be later than start time.")
+        if self.start_time >= self.finish_time:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Finish time must be later than start time.")
 
-        if reservation_data.duration_hours > 4:
-            raise ValueError("Maximum reservation duration is 4 hours.")
+        if self.duration_hours > 4:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Maximum reservation duration is 4 hours.")
 
-        if reservation_data.table_id is None:
-            raise ValueError("A table must be selected for the reservation.")
+        if self.table_id is None:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="A table must be selected for the reservation.")
+        return self
 
     @field_validator("dishes")
     def max_five_dishes(cls, value: Optional[List[UUID]]) -> Optional[List[UUID]]:

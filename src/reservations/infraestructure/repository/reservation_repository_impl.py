@@ -120,30 +120,6 @@ class ReservationRepositoryImpl(IReservationRepository):
             print(f"Error {e}")
             return Result[bool].failure(e,'Failed query',500)
 
-    async def get_reservation_by_id(self, reservation_id: UUID) -> Result[Reservation]:
-        try:
-            statement = (
-                select(ReservationModel)
-                .where(
-                    ReservationModel.id == reservation_id
-                )
-                .options(
-                    selectinload(ReservationModel.table),
-                    selectinload(ReservationModel.client),
-                    selectinload(ReservationModel.restaurant),
-                    selectinload(ReservationModel.dishes)
-                )
-            )
-            result: Optional[ReservationModel] = (await self.db.exec(statement)).one_or_none()
-            if result is None:
-                return Result[Reservation].failure(BaseException,'Reservation Not Found',404)
-
-            reservations: Reservation = ReservationMapper.to_domain(result)
-            return Result[Reservation].success(reservations)
-        except BaseException as e:
-            print(f"Error {e}")
-            return Result[str].failure(e,str(e),500)
-
     async def create_reservation(self, reservation: Reservation) -> Result[Reservation]:
         try:
             reservation_model: ReservationModel = ReservationMapper.to_model(reservation)

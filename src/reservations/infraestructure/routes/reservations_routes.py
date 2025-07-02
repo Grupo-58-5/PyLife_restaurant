@@ -77,6 +77,7 @@ async def create_reservation(
     repo_restaurant: RestaurantRepositoryImpl = Depends(get_repository_restaurant)
 ):
     client_id: str = info.value.get("id")
+
     data = ReservationSchemaEntry.model_validate({**body.model_dump(), "client_id": client_id})
 
     service = CreateReservationService(

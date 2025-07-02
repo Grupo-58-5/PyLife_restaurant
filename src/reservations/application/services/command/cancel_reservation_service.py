@@ -13,10 +13,10 @@ class CancelReservationService(IApplicationService[CancelReservationSchemaEntry,
 
         try:
             find_reservation = await self.repo_reservation.get_reservation_by_id(data.reservation_id)
-            if find_reservation.is_error() is True:
-                return Result[str].failure(find_reservation.error,find_reservation.get_error_message(),find_reservation.get_error_code())
+            if find_reservation is None:
+                return Result[str].failure(BaseException,f"Reservation not found",404)
 
-            reservation = find_reservation.value
+            reservation = find_reservation
             if reservation.get_client() != data.client_id:
                 return Result[str].failure(Exception,'Reservation not belonging to the user',403)
             reservation.cancel_reservation()
