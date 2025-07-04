@@ -1,13 +1,16 @@
+from types import CoroutineType
 from src.reservations.application.schemas.entry.cancel_reservation_schema_entry import CancelReservationSchemaEntry
 from src.reservations.domain.repository.reservation_repository import IReservationRepository
+from src.shared.utils.event_bus import EventBus
 from src.shared.utils.i_application_service import IApplicationService
 from src.shared.utils.result import Result
 
 class CancelReservationService(IApplicationService[CancelReservationSchemaEntry, Result[str]]):
 
-    def __init__(self, repo_reservation: IReservationRepository):
+    def __init__(self, repo_reservation: IReservationRepository, event_bus: EventBus):
         super().__init__()
         self.repo_reservation = repo_reservation
+        self.event_bus = event_bus
 
     async def execute(self, data: CancelReservationSchemaEntry) -> Result[str]:
 
@@ -25,6 +28,7 @@ class CancelReservationService(IApplicationService[CancelReservationSchemaEntry,
             if update.is_error() is True:
                 return Result[str].failure(update.error,update.get_error_message(),update.get_error_code())
 
+            await self.event_bus.publish(f"Notificación: Reserva cancelada (ID: {data.reservation_id}).",name="ReservationCanceled")
             return Result[str].success("Reservantion canceled")
         except Exception as e:
             return Result[str].failure(e,str(e),500)

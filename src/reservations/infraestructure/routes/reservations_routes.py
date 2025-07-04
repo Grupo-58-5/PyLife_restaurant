@@ -1,3 +1,4 @@
+import logging
 from typing import Annotated, Final, List
 from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException, status
@@ -7,6 +8,7 @@ from src.auth.application.schemas.entry.user_all_schema_entry import UserAllSche
 from src.auth.infraestructure.JWT.JWT_auth_adapter import JWTAuthAdapter
 from src.auth.infraestructure.JWT.dependencies.verify_scope import VerifyScope
 from src.auth.infraestructure.repository.user_repository_impl import UserRepositoryImpl
+from src.notifications.infraestructure.notifier.notifier import Notifier
 from src.reservations.application.schemas.entry.cancel_reservation_schema_entry import CancelReservationSchemaEntry
 from src.reservations.application.schemas.entry.get_application_schema_entry import GetReservationsSchemaEntry
 from src.reservations.application.schemas.entry.get_reservations_by_user_schema_entry import GetReservationsByUserSchemaEntry
@@ -25,30 +27,26 @@ from src.restaurants.infraestructure.repository.restaurant_repository_impl impor
 from src.restaurants.infraestructure.repository.table_repository_impl import TableRepositoryImpl
 from src.shared.db.database import get_session
 from src.shared.utils.result import Result
+from src.shared.utils.event_bus import EventBus
 
 async def get_repository_client(session: AsyncSession = Depends(get_session)) -> UserRepositoryImpl:
     """Get an instance of the UserRepositoryImpl. """
-    print("Session utilizado: ",session)
     return UserRepositoryImpl(db=session)
 
 async def get_repository_restaurant(session: AsyncSession = Depends(get_session)) -> RestaurantRepositoryImpl:
     """Get an instance of the RestaurantRepositoryImpl. """
-    print("Session utilizado: ",session)
     return RestaurantRepositoryImpl(db=session)
 
 async def get_repository_table(session: AsyncSession = Depends(get_session)) -> TableRepositoryImpl:
     """Get an instance of the TableRepositoryImpl. """
-    print("Session utilizado: ",session)
     return TableRepositoryImpl(db=session)
 
 async def get_repository_menu(session: AsyncSession = Depends(get_session)) -> MenuRepositoryImpl:
     """Get an instance of the MenuRepositoryImpl. """
-    print("Session utilizado: ",session)
     return MenuRepositoryImpl(db=session)
 
 async def get_repository_reservation(session: AsyncSession = Depends(get_session)) -> ReservationRepositoryImpl:
     """Get an instance of the ReservationRepositoryImpl. """
-    print("Session utilizado: ",session)
     return ReservationRepositoryImpl(db=session)
 
 router: Final = APIRouter(
@@ -57,7 +55,8 @@ router: Final = APIRouter(
 )
 
 auth: Final = JWTAuthAdapter()
-
+event_bus = EventBus()
+notifier = Notifier(logger=logging.getLogger("uvicorn"))
 #NOTE: Endpoints para el cliente
 @router.post(
     '/',
@@ -80,9 +79,15 @@ async def create_reservation(
 
     data = ReservationSchemaEntry.model_validate({**body.model_dump(), "client_id": client_id})
 
+    async def handler(message: str):
+        await notifier.notify_info(message)
+
+    await event_bus.subscribe("ReservationCreated", handler)
+
     service = CreateReservationService(
         reservation_repository=repo_reservation,
-        restaurant_repository=repo_restaurant
+        restaurant_repository=repo_restaurant,
+        event_bus=event_bus
     )
 
     result = await service.execute(data)
@@ -111,8 +116,14 @@ async def cancel_reservation(
     client_id: str = info.value.get("id")
     data = CancelReservationSchemaEntry.model_validate({"reservation_id": reservation_id, "client_id": client_id})
 
+    async def handler(message: str):
+        await notifier.notify_info(message)
+
+    await event_bus.subscribe("ReservationCanceled", handler)
+
     service = CancelReservationService(
         repo_reservation=repo_reservation,
+        event_bus=event_bus
     )
 
     result = await service.execute(data)
