@@ -1,16 +1,19 @@
 from datetime import datetime
 from typing import List, Optional
 from uuid import UUID
+from sqlalchemy import desc, func, text
 from sqlmodel.ext.asyncio.session import AsyncSession
 from sqlmodel import select
 from sqlalchemy.orm import selectinload
 
+from src.dashboard.application.schemas.response.top_dishes_response_schema import TopDishesResponseSchema
 from src.reservations.domain.repository.reservation_repository import IReservationRepository
 from src.reservations.domain.reservation import Reservation
 from src.reservations.domain.vo.reservation_status_vo import ReservationStatus
 from src.reservations.infraestructure.mappers.reservation_mapper import ReservationMapper
 from src.reservations.infraestructure.models.pre_order_model import PreOrder
 from src.reservations.infraestructure.models.reservation_model import ReservationModel
+from src.restaurants.infraestructure.model.menu_model import MenuModel
 from src.shared.utils.result import Result
 
 # TODO: Reemplazar por Result en las respuestas
@@ -263,4 +266,57 @@ class ReservationRepositoryImpl(IReservationRepository):
         except BaseException as e:
             print(f"Error {e}")
             return None
-    
+        
+
+    async def get_top_dishes(
+        self, 
+        restaurant_id: UUID, 
+        start_date: datetime, 
+        end_date: datetime
+    ) -> Result[List[TopDishesResponseSchema]]:
+        try:
+            # consulta con sqlAlchemy
+            if start_date is None or end_date is None:
+                return Result.failure(
+                    ValueError("Start date and end date must be provided"),
+                    "Start date and end date are required",
+                    400
+                )
+            if start_date > end_date:
+                return Result.failure(
+                    ValueError("Start date cannot be after end date"),
+                    "Start date must be before end date",
+                    400
+                )
+            # Consulta para obtener los platos más pedidos en un restaurante en un rango de fechas
+            query = text("""
+                SELECT d.id as dish_id, d.name as dish_name, COUNT(*) as quantity
+                FROM reservations r, menus d, public."PreOrder" p
+                WHERE :restaurant_id = r.restaurant_id
+                AND r.id = p.reservation_id
+                AND p.dish_id = d.id
+                GROUP BY d.id, d.name
+                ORDER BY quantity DESC
+                LIMIT 5
+            """)
+
+            result = await self.db.execute(query, {"restaurant_id": str(restaurant_id)})
+            print("Top dishes result: ", result.fetchall())
+            result = result.fetchall()
+            if not result:
+                return Result[List[TopDishesResponseSchema]].success([])
+
+            response: List[TopDishesResponseSchema] = [
+                TopDishesResponseSchema(
+                    dish_id=menu.dish_id,
+                    dish_name=menu.dish_name,
+                    quantity=menu.quantity,
+                    top= index + 1
+                ) for index, menu in enumerate(result)
+            ]
+
+            return Result[List[TopDishesResponseSchema]].success(response)
+
+        except Exception as e:
+            print(f"Error: {str(e)}")
+            return Result.failure(e, "Failed to fetch top dishes", 500)
