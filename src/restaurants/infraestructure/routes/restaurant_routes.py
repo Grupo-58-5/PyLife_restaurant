@@ -6,10 +6,12 @@ from sqlmodel.ext.asyncio.session import AsyncSession
 from src.auth.infraestructure.JWT.JWT_auth_adapter import JWTAuthAdapter
 from src.auth.infraestructure.JWT.dependencies.verify_scope import VerifyScope
 from src.restaurants.application.services.commands.create_restaurant_application_service import CreateRestaurantApplicationService
+from src.restaurants.application.services.commands.delete_restaurant_application_service import DeleteRestaurantApplicationService
+from src.restaurants.application.services.commands.update_restaurant_application_service import UpdateRestaurantApplicationService
 from src.restaurants.application.services.querys.get_all_restaurant_application_sevice import GetAllRestaurantApplicationService
 from src.restaurants.application.services.querys.get_restaurant_application_service import GetRestaurantApplicationService
 from src.restaurants.infraestructure.repository.restaurant_repository_impl import RestaurantRepositoryImpl
-from src.restaurants.application.schemas.entry.resaurant_schema_entry import CreateRestaurantSchema
+from src.restaurants.application.schemas.entry.resaurant_schema_entry import CreateRestaurantSchema, UpdateRestaurantSchema
 from src.restaurants.application.schemas.response.restaurant_schema_response import BaseRestaurantResponse, RestaurantDetailResponse
 
 
@@ -57,6 +59,47 @@ async def create_restaurant(info: Annotated[Result[dict],Depends(auth.decode)], 
         else:
             raise HTTPException(status_code=500, detail="Unexpected error")
     return res.result()
+
+@router.patch(
+    "/{restaurant_id}",
+    summary="Update restaurant by ID",
+    status_code=status.HTTP_202_ACCEPTED,
+    response_model=BaseRestaurantResponse,
+    dependencies=[Depends(VerifyScope(["admin:write", "admin:read"], auth))]
+)
+async def update_restaurant(
+    restaurant_id: UUID,
+    update_data: UpdateRestaurantSchema,
+    info: Annotated[Result[dict], Depends(auth.decode)],
+    restaurant_repo: RestaurantRepositoryImpl = Depends(get_repository)
+):
+    
+    service = UpdateRestaurantApplicationService(restaurant_repo)
+
+    result = await service.execute([restaurant_id, update_data])
+
+    if result.is_error():
+        if result.get_error_code() != 500:
+            raise HTTPException(status_code=result.get_error_code() or 500, detail=result.get_error_message())
+        raise HTTPException(status_code=500, detail=result.get_error_message())
+    return result.result()
+
+
+@router.delete(
+    "/{restaurant_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+    dependencies=[Depends(VerifyScope(["admin:write"], auth))]
+)
+async def delete_restaurant(restaurant_id: UUID, info: Annotated[Result[dict], Depends(auth.decode)],repo: RestaurantRepositoryImpl = Depends(get_repository)):
+    """
+    Delete a restaurant by ID (accessible to administrators only).
+    """
+    service = DeleteRestaurantApplicationService(repo)
+    res = await service.execute(restaurant_id)
+    if res.is_error():
+        if res.get_error_code() != 500:
+            raise HTTPException(status_code=res.get_error_code() or 500, detail=res.get_error_message())
+        raise HTTPException(status_code=500, detail=res.get_error_message())
 
 @router.get(
     "/{restaurant_id}", response_model=RestaurantDetailResponse,
