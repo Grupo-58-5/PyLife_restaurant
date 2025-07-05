@@ -31,11 +31,7 @@ class MenuEntity():
     def create(cls, id: UUID, name: str, description: str, category: str) -> "MenuEntity":
         """Factory method to create a MenuEntity instance."""
         return cls(id, name, description, category)
-    
-    @property
-    def get_id(self) -> UUID:
-        return self.id
-    
+
     def get_id(self) -> UUID:
         return self.id
     
