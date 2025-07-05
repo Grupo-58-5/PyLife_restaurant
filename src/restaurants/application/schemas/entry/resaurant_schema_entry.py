@@ -1,5 +1,5 @@
 from typing import List
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, Field
 from datetime import time
 
 from src.restaurants.application.schemas.entry.create_table_schema import CreateTableSchema
@@ -41,3 +41,20 @@ class CreateRestaurantSchema(BaseModel):
     #     if opening_time is not None and v <= opening_time:
     #         raise ValueError("closing_time must be after opening_time")
     #     return v
+
+class UpdateRestaurantSchema(BaseModel):
+    """Schema for updating an existing restaurant entry."""
+
+    name: str | None = Field(default=None)
+    address: str | None = Field(default=None, description="Restaurant address.")
+    opening_time: time | None = Field(default=time(8, 0), description="Opening time.")
+    closing_time: time | None = Field(default=time(12,0), description="Closing time.")
+
+    def validate_schedule(cls, values):
+        opening = values.get("opening_time")
+        closing = values.get("closing_time")
+
+        if (opening is not None and closing is None) or (closing is not None and opening is None):
+            raise ValueError("Both opening_time and closing_time must be provided together.")
+
+        return values
