@@ -4,6 +4,7 @@ def test_register_api(client):
     data = response.json()
     assert response.status_code == 201
     assert data["message"] == "Registered user"
+    assert data["role"] != "ADMIN"
     assert data["role"] == "CLIENT"
 
 def test_register_repeat_email_api(client):

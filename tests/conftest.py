@@ -1,9 +1,11 @@
 import asyncio
 from datetime import datetime
 from typing import AsyncGenerator
+from uuid import UUID
 import pytest
 from fastapi.testclient import TestClient
 from src.restaurants.infraestructure.model.restaurant_model import RestaurantModel
+from src.restaurants.infraestructure.model.table_model import TableModel
 from src.shared.db.init_db import create_tables
 
 from src.auth.infraestructure.model.user_model import UserModel
@@ -48,7 +50,7 @@ def insert_users(create_async_tables):
     asyncio.run(insert_client())
 
 @pytest.fixture(scope="session")
-def insert_restaurant(create_async_tables):
+def insert_restaurant(create_async_tables) -> (tuple[UUID | None, UUID] | None):
     print("Ejecutando Fixture")
     async def insert():
         async for session in get_session():
@@ -61,7 +63,17 @@ def insert_restaurant(create_async_tables):
             session.add(restaurant)
             await session.commit()
             await session.refresh(restaurant)
-            return restaurant.id
+            table = TableModel(
+                table_number=2,
+                capacity=3,
+                location="Indoor",
+                is_active=True,
+                restaurant_id=restaurant.id
+            )
+            session.add(table)
+            await session.commit()
+            await session.refresh(table)
+            return (restaurant.id,table.id)
     return asyncio.run(insert())
 
 @pytest.fixture(scope="function")

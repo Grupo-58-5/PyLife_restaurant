@@ -31,10 +31,6 @@ class IReservationRepository(ABC):
         pass
 
     @abstractmethod
-    async def get_reservation_by_id(self, reservation_id: UUID) -> Result[Reservation]:
-        pass
-
-    @abstractmethod
     async def create_reservation(self, reservation: Reservation) -> Result[Reservation]:
         pass
 
