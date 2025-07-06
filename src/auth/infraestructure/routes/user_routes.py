@@ -6,9 +6,9 @@ from src.auth.application.schemas.entry.change_profile_schema_entry import Chang
 from src.auth.application.schemas.entry.user_all_schema_entry import UserAllSchemaEntry
 from src.auth.application.schemas.entry.user_by_id_schema_entry import UserByIdSchemaEntry
 from src.auth.application.schemas.response.user_all_schema_response import UserAllSchemaeResponse
-from src.auth.application.services.change_profile_application_service import ChangeProfileAplicationService
-from src.auth.application.services.get_all_user_application_service import GetAllUserApplicationService
-from src.auth.application.services.get_user_by_id_application_service import GetUserByIdApplicationService
+from src.auth.application.services.command.change_profile_application_service import ChangeProfileAplicationService
+from src.auth.application.services.query.get_all_user_application_service import GetAllUserApplicationService
+from src.auth.application.services.query.get_user_by_id_application_service import GetUserByIdApplicationService
 from src.auth.infraestructure.JWT.JWT_auth_adapter import JWTAuthAdapter
 from src.auth.infraestructure.JWT.dependencies.verify_scope import VerifyScope
 from src.auth.infraestructure.repository.user_repository_impl import UserRepositoryImpl

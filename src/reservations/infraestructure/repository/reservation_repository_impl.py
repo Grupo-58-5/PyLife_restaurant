@@ -127,6 +127,7 @@ class ReservationRepositoryImpl(IReservationRepository):
             await self.db.commit()
             await self.db.refresh(reservation_model)
             for dish in reservation.get_dishes() or []:
+
                 pre_order = PreOrder(
                     dish_id=dish.get_menu_id(),
                     reservation_id=reservation.get_id()
@@ -137,7 +138,7 @@ class ReservationRepositoryImpl(IReservationRepository):
             return Result[Reservation].success(reservation)
         except BaseException as e:
             print(f"Error {e}")
-            return Result[Reservation].failure(e,"Failed insert in Reservation Table",500)
+            return Result[Reservation].failure(e,f"Failed insert in Reservation Table: {str(e)}",500)
 
     async def update_reservation(self, reservation_id: UUID, reservation: Reservation) -> Result[Reservation]:
         try:
