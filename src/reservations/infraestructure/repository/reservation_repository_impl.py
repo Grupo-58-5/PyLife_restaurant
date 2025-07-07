@@ -277,10 +277,8 @@ class ReservationRepositoryImpl(IReservationRepository):
             """)
 
             result = await self.db.execute(query, {"restaurant_id": str(restaurant_id)})
-            print("Top dishes result: ", result.fetchall())
-            result = result.fetchall()
-            if not result:
-                return Result[List[TopDishesResponseSchema]].success([])
+            result = result.all()
+            print("Top dishes result: ", result)
 
             response: List[TopDishesResponseSchema] = [
                 TopDishesResponseSchema(
