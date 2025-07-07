@@ -9,7 +9,7 @@ class Result[T]:
     messg: str
     is_failure: bool
 
-    def __init__(self, value: T | None, error: BaseException | None = None, messg: str | None = None, code: int | None = None) :
+    def __init__(self, value: T | None, error: BaseException | None = None, messg: str | None = None, code: int | None = 500) :
         if (value is None) and (error is None):
             raise ValueError("The result must recibe one input, this has both attributes as None")
         if (value is not None) and (error is not None):

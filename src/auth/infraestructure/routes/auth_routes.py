@@ -134,7 +134,7 @@ async def log_in(
     "/delete/current_user",
     response_model=dict,
     status_code=status.HTTP_200_OK,
-    dependencies=[Depends(VerifyScope(["admin:read","admin:write"],JWTAuthAdapter()))],
+    dependencies=[Depends(VerifyScope(["client:read","client:write"],JWTAuthAdapter()))],
     description="Delete the user you log in with"
 )
 async def delete_current_user(
@@ -145,7 +145,7 @@ async def delete_current_user(
         raise HTTPException(status_code=500, detail=info.get_error_message())
 
     service = DeleteUserApplicationService(repo=repo)
-    body = DeleteUserSchema(UUID(info.value.get('id')))
+    body = DeleteUserSchema(id=UUID(info.value.get('id')))
     result = await service.execute(body)
 
     if result.is_error() is True:

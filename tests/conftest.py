@@ -49,7 +49,7 @@ def insert_users(create_async_tables):
             await session.refresh(user)
     asyncio.run(insert_client())
 
-@pytest.fixture(scope="session")
+@pytest.fixture(scope="function")
 def insert_restaurant(create_async_tables) -> (tuple[UUID | None, UUID] | None):
     print("Ejecutando Fixture")
     async def insert():

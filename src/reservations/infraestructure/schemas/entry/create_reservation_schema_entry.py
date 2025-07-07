@@ -33,12 +33,10 @@ class CreateReservationSchemaEntry(BaseModel):
         if self.duration_hours > 4:
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Maximum reservation duration is 4 hours.")
 
-        if self.table_id is None:
-            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="A table must be selected for the reservation.")
         return self
 
     @field_validator("dishes")
     def max_five_dishes(cls, value: Optional[List[UUID]]) -> Optional[List[UUID]]:
         if value is not None and len(value) > 5:
-            raise ValueError("You can select at most 5 dishes for a reservation.")
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="You can select at most 5 dishes for a reservation.")
         return value

@@ -1,10 +1,11 @@
-from typing import Annotated, List
+from typing import Annotated, Dict, List
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlmodel import Session
 
 from src.auth.application.schemas.entry.change_profile_schema_entry import ChangeProfileSchemaEntry
 from src.auth.application.schemas.entry.user_all_schema_entry import UserAllSchemaEntry
 from src.auth.application.schemas.entry.user_by_id_schema_entry import UserByIdSchemaEntry
+from src.auth.application.schemas.response.change_profile_schema_response import ChangeProfileSchemaResponse
 from src.auth.application.schemas.response.user_all_schema_response import UserAllSchemaeResponse
 from src.auth.application.services.command.change_profile_application_service import ChangeProfileAplicationService
 from src.auth.application.services.query.get_all_user_application_service import GetAllUserApplicationService
@@ -30,6 +31,33 @@ router = APIRouter(
 auth = JWTAuthAdapter()
 
 @router.get(
+    "/current_user",
+    response_model=UserAllSchemaeResponse,
+    status_code=status.HTTP_200_OK,
+    dependencies=[Depends(VerifyScope(["client:read"],JWTAuthAdapter()))]
+)
+async def current_user(
+    info: Annotated[Result[dict],Depends(auth.decode)],
+    repo: UserRepositoryImpl = Depends(get_repository),
+):
+    """
+    Get current user by ID endpoint.
+    """
+
+    if info.is_error():
+        raise HTTPException(status_code=500, detail=info.get_error_message())
+
+
+    service = GetUserByIdApplicationService(repo=repo)
+
+    result = await service.execute(UserByIdSchemaEntry(id=info.value.get("id")))
+    if result.is_error():
+
+        raise HTTPException(status_code=result.get_error_code(), detail={'msg':str(result.get_error_message())})
+
+    return result.value
+
+@router.get(
     "/get/users",
     response_model=List[UserAllSchemaeResponse],
     status_code=status.HTTP_200_OK,
@@ -51,6 +79,9 @@ async def get_all(
     service = GetAllUserApplicationService(repo=repo)
 
     result = await service.execute(query)
+    if result.is_error():
+
+        raise HTTPException(status_code=result.get_error_code(), detail={'msg':str(result.get_error_message())})
 
     return result.value
 
@@ -76,12 +107,15 @@ async def get_user(
     service = GetUserByIdApplicationService(repo=repo)
 
     result = await service.execute(UserByIdSchemaEntry(id=id))
+    if result.is_error():
+
+        raise HTTPException(status_code=result.get_error_code(), detail={'msg':str(result.get_error_message())})
 
     return result.value
 
 @router.patch(
     "/change/profile",
-    response_model=dict,
+    response_model=ChangeProfileSchemaResponse,
     status_code=status.HTTP_200_OK,
     dependencies=[Depends(VerifyScope(["client:write","client:read","admin:write","admin:read"],JWTAuthAdapter()))]
 )
@@ -103,5 +137,7 @@ async def update_profile(
     service = ChangeProfileAplicationService(repo=repo,hash=hash)
 
     result = await service.execute(data)
+    if result.is_error():
+        raise HTTPException(status_code=result.get_error_code(), detail={'msg':str(result.get_error_message())})
 
-    return {'msg':result.value}
+    return result.value
