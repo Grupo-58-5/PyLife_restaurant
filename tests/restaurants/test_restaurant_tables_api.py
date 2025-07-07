@@ -51,10 +51,12 @@ def test_client_must_not_update_nor_delete_table(client, get_token_admin, get_to
     restaurant_id = data_restaurant["id"]
     body_table = {
         "table_number": 10,
-        "seats": 13,
+        "seats": 7,
         "location": "Indoor"
     }   
     response_table = client.post(f"/table/{restaurant_id}",json=body_table, headers=headers_admin)
+    print("Response: ",response_table)
+    print("JSON: ",response_table.json())
     assert response_table.status_code == 201
     data_table = response_table.json()
     table_id = data_table["id"] ## ! Or number table depends on the implementation

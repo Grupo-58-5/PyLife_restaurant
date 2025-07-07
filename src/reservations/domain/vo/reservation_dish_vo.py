@@ -17,3 +17,6 @@ class ReservationDishVO:
     
     def get_name(self) -> str:
         return self.name
+
+    def __repr__(self):
+        return f"ReservationDishVO(menu_id={self.menu_id}, name={self.name})"

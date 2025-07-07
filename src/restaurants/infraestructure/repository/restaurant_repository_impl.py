@@ -1,7 +1,7 @@
 from typing import List, Optional
 from uuid import UUID
 from sqlmodel.ext.asyncio.session import AsyncSession
-from sqlmodel import delete, select
+from sqlmodel import UUID, select
 from src.reservations.domain.reservation import Reservation
 from src.restaurants.domain.repository.i_restaurant_repository import IRestaurantRepository
 from src.restaurants.domain.restaurant import Restaurant
@@ -20,7 +20,7 @@ class RestaurantRepositoryImpl(IRestaurantRepository):
         super().__init__()
         self.db = db
 
-    async def get_restaurant_by_id(self, restaurant_id: str) -> Optional[Restaurant]:
+    async def get_restaurant_by_id(self, restaurant_id: UUID) -> Optional[Restaurant]:
         try:
             model = await self.get_restaurant_model(restaurant_id)
             if model is None:

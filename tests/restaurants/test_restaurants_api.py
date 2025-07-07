@@ -21,23 +21,24 @@ def test_client_must_not_create_restaurant(client, get_token_client):
     assert response.status_code == 403
 
 ## ? Verify clients must not update nor delete restaurants
-def test_client_must_not_update_nor_delete_restaurant(client, get_token_client):
+def test_client_must_not_update_nor_delete_restaurant(client, get_token_client, get_token_admin):
     '''
     Test de Restaurantes:
         ◦ Asegurar que un cliente no pueda actualizar un restaurante.
     '''
     headers = {"Authorization": f"Bearer {get_token_client}"}
+    header_admin = {"Authorization": f"Bearer {get_token_admin}"}
     body = {
         "name": "Restaurant Calidad",
         "address":"Caracas - Las Mercedes",
         "opening_hour": "12:00:00",
         "closing_hour":"22:00:00"
     }
-    response = client.post("/restaurants",json=body, headers=headers)
+    response = client.post("/restaurants",json=body, headers=header_admin)
     assert response.status_code == 201
     data = response.json()
     restaurant_id = data["id"]
-    response = client.put(f"/restaurants/{restaurant_id}",json=body, headers=headers)
+    response = client.patch(f"/restaurants/{restaurant_id}",json=body, headers=headers)
     print("JSON de respuesta:", response.json())
     assert response.status_code == 403
     response = client.delete(f"/restaurants/{restaurant_id}", headers=headers)
@@ -172,12 +173,12 @@ def test_create_restaurant_menu_items_same_name(client, get_token_admin):
             {
                 "name": "Hamburger",
                 "description": "Delicious beef burger",
-                "category": "Entrance",
+                "category": "Entrada",
             },
             {
                 "name": "Hamburger",
                 "description": "Delicious beef burger with cheese",
-                "category": "Entrance",
+                "category": "Entrada",
             },
         ]
     }
