@@ -7,8 +7,8 @@ from uuid import UUID
 
 from src.auth.application.schemas.entry.delete_user_schema import DeleteUserSchema
 from src.auth.application.schemas.entry.user_by_id_schema_entry import UserByIdSchemaEntry
-from src.auth.application.services.delete_user_application_service import DeleteUserApplicationService
-from src.auth.application.services.get_user_by_id_application_service import GetUserByIdApplicationService
+from src.auth.application.services.command.delete_user_application_service import DeleteUserApplicationService
+from src.auth.application.services.query.get_user_by_id_application_service import GetUserByIdApplicationService
 from src.auth.domain.repository.user_repository_interface import IUserRepository
 from src.shared.db.database import get_session
 from src.auth.infraestructure.repository.user_repository_impl import UserRepositoryImpl
@@ -20,9 +20,9 @@ from src.auth.application.schemas.response.user_all_schema_response import UserA
 from src.auth.application.schemas.entry.log_in_schema_entry import LogInSchemaEntry
 from src.auth.application.schemas.response.log_in_schema_response import LogInSchemaResponse
 from src.auth.infraestructure.schemas.response.toke_schema import Token
-from src.auth.application.services.create_user_application_service import CreateUserApplicationService
-from src.auth.application.services.get_all_user_application_service import GetAllUserApplicationService
-from src.auth.application.services.log_in_user_application_service import LogInUserApplicationService
+from src.auth.application.services.command.create_user_application_service import CreateUserApplicationService
+from src.auth.application.services.query.get_all_user_application_service import GetAllUserApplicationService
+from src.auth.application.services.query.log_in_user_application_service import LogInUserApplicationService
 from src.shared.application.ports.hash_handler import HashHelper
 from src.shared.infraestructure.adapters.bcrypt_hash_adapter import BcryptHashAdapter
 from src.shared.application.ports.auth_handler import AuthHandler

@@ -1,5 +1,6 @@
 
 
+from time import time
 from typing import List
 from uuid import UUID
 
@@ -33,7 +34,7 @@ class Restaurant:
 
         """Factory method to create a Restaurant instance."""
         return cls(id, name, address, schedule, menu)
-    
+
     def get_id(self) -> UUID:
         return self.id
     
@@ -43,10 +44,10 @@ class Restaurant:
     def get_address(self) -> str:
         return self.address.get_address()
     
-    def get_opening(self) -> str:
+    def get_opening(self) -> time:
         return self.schedule.opening_time()
     
-    def get_closing(self) -> str:
+    def get_closing(self) -> time:
         return self.schedule.closing_time()
     
     def get_menu(self) -> List[MenuEntity]:

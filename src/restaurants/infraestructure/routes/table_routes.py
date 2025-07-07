@@ -124,5 +124,5 @@ async def delete_table(restaurant_id: UUID, table_number: int , info: Annotated[
     result = await service.execute((restaurant_id, table_number))
     if result.is_error():
         if result.get_error_code() != 500:
-            raise HTTPException(status_code=result.get_error_code(), detail=result.get_error_message())
+            raise HTTPException(status_code=result.get_error_code() or 500, detail=result.get_error_message())
         raise HTTPException(status_code=500, detail=result.get_error_message())

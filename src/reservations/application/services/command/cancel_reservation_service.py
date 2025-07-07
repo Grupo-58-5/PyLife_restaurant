@@ -1,22 +1,25 @@
+from types import CoroutineType
 from src.reservations.application.schemas.entry.cancel_reservation_schema_entry import CancelReservationSchemaEntry
 from src.reservations.domain.repository.reservation_repository import IReservationRepository
+from src.shared.utils.event_bus import EventBus
 from src.shared.utils.i_application_service import IApplicationService
 from src.shared.utils.result import Result
 
 class CancelReservationService(IApplicationService[CancelReservationSchemaEntry, Result[str]]):
 
-    def __init__(self, repo_reservation: IReservationRepository):
+    def __init__(self, repo_reservation: IReservationRepository, event_bus: EventBus):
         super().__init__()
         self.repo_reservation = repo_reservation
+        self.event_bus = event_bus
 
     async def execute(self, data: CancelReservationSchemaEntry) -> Result[str]:
 
         try:
             find_reservation = await self.repo_reservation.get_reservation_by_id(data.reservation_id)
-            if find_reservation.is_error() is True:
-                return Result[str].failure(find_reservation.error,find_reservation.get_error_message(),find_reservation.get_error_code())
+            if find_reservation is None:
+                return Result[str].failure(BaseException,f"Reservation not found",404)
 
-            reservation = find_reservation.value
+            reservation = find_reservation
             if reservation.get_client() != data.client_id:
                 return Result[str].failure(Exception,'Reservation not belonging to the user',403)
             reservation.cancel_reservation()
@@ -25,6 +28,7 @@ class CancelReservationService(IApplicationService[CancelReservationSchemaEntry,
             if update.is_error() is True:
                 return Result[str].failure(update.error,update.get_error_message(),update.get_error_code())
 
+            await self.event_bus.publish(f"Notificación: Reserva cancelada (ID: {data.reservation_id}).",name="ReservationCanceled")
             return Result[str].success("Reservantion canceled")
         except Exception as e:
             return Result[str].failure(e,str(e),500)

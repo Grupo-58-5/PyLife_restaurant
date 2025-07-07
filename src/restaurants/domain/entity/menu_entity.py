@@ -31,11 +31,7 @@ class MenuEntity():
     def create(cls, id: UUID, name: str, description: str, category: str) -> "MenuEntity":
         """Factory method to create a MenuEntity instance."""
         return cls(id, name, description, category)
-    
-    @property
-    def get_id(self) -> UUID:
-        return self.id
-    
+
     def get_id(self) -> UUID:
         return self.id
     
@@ -62,18 +58,18 @@ class MenuEntity():
     
     @name.setter
     def name(self, value: str) -> None:
-        """Sets the name of the menu item."""
+        if value is not None and (len(value) < 3 or len(value) > 50):
+            raise ValueError("Menu name must be between 3 and 50 characters long")
         self._name = value
-        self.validate()
     
     @description.setter
     def description(self, value: str) -> None:
-        """Sets the description of the menu item."""
+        if value is not None and (len(value) < 10 or len(value) > 200):
+            raise ValueError("Menu description must be between 10 and 200 characters long")
         self._description = value
-        self.validate()
     
     @category.setter
     def category(self, value: str) -> None:
-        """Sets the category of the menu item."""
+        if value is not None and (len(value) < 3 or len(value) > 30):
+            raise ValueError("Menu category must be between 3 and 30 characters long")
         self._category = value
-        self.validate()

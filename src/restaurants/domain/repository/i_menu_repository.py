@@ -20,5 +20,5 @@ class IMenuRepository(ABC):
         pass
 
     @abstractmethod
-    def delete_item_menu(self, menu_id: UUID) -> None:
+    async def delete_or_disable_menu_item(self, dish_id: UUID) -> Result[bool]:
         pass
