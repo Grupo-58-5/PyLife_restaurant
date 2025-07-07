@@ -120,9 +120,10 @@ class RestaurantRepositoryImpl(IRestaurantRepository):
                 .where(RestaurantModel.id == id)
                 .options(
                     selectinload(RestaurantModel.menu_items),
-                    selectinload(RestaurantModel.tables.and_(TableModel.is_active == True))
+                    selectinload(RestaurantModel.tables)
                 )
             )
+
         return (await self.db.exec(statement)).one_or_none()
 
 

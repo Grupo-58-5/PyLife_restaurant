@@ -1,5 +1,5 @@
-from datetime import datetime
-from typing import List, Optional
+from datetime import date, datetime
+from typing import List, Optional, Tuple
 from uuid import UUID
 from sqlalchemy import desc, func, text
 from sqlmodel.ext.asyncio.session import AsyncSession
@@ -320,3 +320,13 @@ class ReservationRepositoryImpl(IReservationRepository):
         except Exception as e:
             print(f"Error: {str(e)}")
             return Result.failure(e, "Failed to fetch top dishes", 500)
+
+    async def get_reservations_grouped_by_day(self, start_date: date, end_date: date) -> List[Tuple[date, int]]:
+        statement = (
+            select(func.date(ReservationModel.date), func.count(ReservationModel.id))
+            .where(ReservationModel.date >= start_date, ReservationModel.date <= end_date)
+            .group_by(func.date(ReservationModel.date))
+            .order_by(func.date(ReservationModel.date))
+        )
+        results = await self.db.exec(statement)
+        return results.all()  # List of tuples (date, count)
