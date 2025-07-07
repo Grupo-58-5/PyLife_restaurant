@@ -1,5 +1,6 @@
 
 
+from datetime import datetime 
 from uuid import UUID
 
 from src.dashboard.application.schemas.response.occupancy_restaurant_response import OccupancyItemResponse
@@ -21,10 +22,12 @@ class GetOccupancyByRestaurantIdApplicationService(IApplicationService[UUID, Res
                     messg="No restaurant exists with that ID.",
                     code=404
                 )
-
-            tables = restaurant.tables  # directamente del modelo SQLModel
+            
+            today = datetime.now().date()
+            tables = restaurant.tables
             total_tables = len(tables)
-            occupied_tables = sum(1 for t in tables if not t.is_active)
+            reservation = restaurant.reservations
+            occupied_tables = sum(1 for r in reservation if (today >= r.start_time.date() and today <= r.finish_time.date()))
             occupancy = (occupied_tables / total_tables) * 100 if total_tables > 0 else 0.0
 
             return Result.success(OccupancyItemResponse(

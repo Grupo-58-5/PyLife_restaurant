@@ -61,24 +61,24 @@ async def get_top_dishes_preorder(
     else:
         raise HTTPException(status_code=res.get_error_code(),detail={'msg':str(res.get_error_message())})
 
-# @router.get(
-#     "/reservations/per-day",
-#     summary="Get reservations per day",
-#     response_model=List[ReservationsPerDayItemResponse],
-#     status_code=200,
-#     dependencies=[Depends(VerifyScope(["admin:read"], auth))]
-# )
-# async def get_reservations_per_day(
-#     info: Annotated[Result[dict], Depends(auth.decode)],
-#     query: ReservationsPerDayEntry = Depends(),
-#     reservation_repo: ReservationRepositoryImpl = Depends(get_repository_reservation)
-# ):
-#     service = GetReservationsPerDayApplicationService(reservation_repo)
-#     res = await service.execute((query.start_date, query.end_date))
+@router.get(
+    "/reservations",
+    summary="Get reservations per day",
+    response_model=List[ReservationsPerDayItemResponse],
+    status_code=200,
+    dependencies=[Depends(VerifyScope(["admin:read"], auth))]
+)
+async def get_reservations_per_day(
+    info: Annotated[Result[dict], Depends(auth.decode)],
+    query: ReservationsPerDayEntry = Depends(),
+    reservation_repo: ReservationRepositoryImpl = Depends(get_repository_reservation)
+):
+    service = GetReservationsPerDayApplicationService(reservation_repo)
+    res = await service.execute((query.start_date, query.end_date, query.group_by))
 
-#     if res.is_error():
-#         raise HTTPException(status_code=res.get_error_code(), detail={"msg": res.get_error_message()})
-#     return res.result()
+    if res.is_error():
+        raise HTTPException(status_code=res.get_error_code(), detail={"msg": res.get_error_message()})
+    return res.result()
 
 @router.get(
     "/occupancy/{restaurant_id}",

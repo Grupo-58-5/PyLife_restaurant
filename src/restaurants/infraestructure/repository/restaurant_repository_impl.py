@@ -120,7 +120,8 @@ class RestaurantRepositoryImpl(IRestaurantRepository):
                 .where(RestaurantModel.id == id)
                 .options(
                     selectinload(RestaurantModel.menu_items),
-                    selectinload(RestaurantModel.tables)
+                    selectinload(RestaurantModel.tables),
+                    selectinload(RestaurantModel.reservations)
                 )
             )
 
