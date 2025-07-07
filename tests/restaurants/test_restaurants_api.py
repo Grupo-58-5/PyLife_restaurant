@@ -20,6 +20,33 @@ def test_client_must_not_create_restaurant(client, get_token_client):
 
     assert response.status_code == 403
 
+## ? Verify admin can update and delete restaurants
+def test_admin_must_update_or_delete_restaurant(client, get_token_admin):
+    '''
+    Test de Restaurantes:
+        ◦ Asegurar que un administrador pueda actualizar o eliminar un restaurante.
+    '''
+
+    header_admin = {"Authorization": f"Bearer {get_token_admin}"}
+    body = {
+        "name": "Restaurant El Test",
+        "address":"Caracas - Las Mercedes",
+        "opening_hour": "12:00:00",
+        "closing_hour":"22:00:00"
+    }
+    response = client.post("/restaurants",json=body, headers=header_admin)
+    assert response.status_code == 201
+    data = response.json()
+    restaurant_id = data["id"]
+
+    response_patch = client.patch(f"/restaurants/{restaurant_id}",json=body, headers=header_admin)
+    assert response_patch.status_code == 202
+    print("Respuesta update: ",response_patch)
+
+    response_delete = client.delete(f"/restaurants/{restaurant_id}", headers=header_admin)
+    print("Respuesta: ",response_delete.status_code)
+    assert response_delete.status_code == 204
+
 ## ? Verify clients must not update nor delete restaurants
 def test_client_must_not_update_nor_delete_restaurant(client, get_token_client, get_token_admin):
     '''

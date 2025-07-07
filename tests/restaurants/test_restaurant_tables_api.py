@@ -2,6 +2,72 @@
 
 ## * TESTS for Restaurant Tables API Endpoints
 
+## ? Test validate creation of a table
+def test_create_table(client, get_token_admin):
+    '''
+    Test de Mesas:
+        ◦ Asegurar que un administrador pueda crear una mesa.
+    '''
+    headers_admin = {"Authorization": f"Bearer {get_token_admin}"}
+    body_restaurant = {
+        "name": "client test table",
+        "address":"Caracas - Las Mercedes",
+        "opening_hour": "12:00:00",
+        "closing_hour":"22:00:00",
+    }
+    response_restaurant = client.post("/restaurants",json=body_restaurant, headers=headers_admin)
+    assert response_restaurant.status_code == 201
+    data_restaurant = response_restaurant.json()
+    restaurant_id = data_restaurant["id"]
+    body_table = {
+        "table_number": 10,
+        "seats": 10,
+        "location": "Indoor"
+    }
+
+    response_table = client.post(f"/table/{restaurant_id}",json=body_table, headers=headers_admin)
+    print("JSON de respuesta:", response_table.json())
+    assert response_table.status_code == 201
+
+## ? Test validate change of a table
+def test_change_and_delete_table(client, get_token_admin):
+    '''
+    Test de Mesas:
+        ◦ Asegurar que un administrador pueda modificar y eliminar una mesa.
+    '''
+    headers_admin = {"Authorization": f"Bearer {get_token_admin}"}
+    body_restaurant = {
+        "name": "client test table",
+        "address":"Caracas - Las Mercedes",
+        "opening_hour": "12:00:00",
+        "closing_hour":"22:00:00",
+    }
+    response_restaurant = client.post("/restaurants",json=body_restaurant, headers=headers_admin)
+    assert response_restaurant.status_code == 201
+    data_restaurant = response_restaurant.json()
+    restaurant_id = data_restaurant["id"]
+    body_table = {
+        "table_number": 10,
+        "seats": 5,
+        "location": "Indoor"
+    }
+
+    response_table = client.post(f"/table/{restaurant_id}",json=body_table, headers=headers_admin)
+    print("JSON de respuesta:", response_table.json())
+    assert response_table.status_code == 201
+    table_id = response_table.json()["id"]
+    table_number = response_table.json()["table_number"]
+
+    body = {
+        "seats": 10
+    }
+    response_change = client.put(f"/table/{restaurant_id}/{table_id}",json=body, headers=headers_admin)
+    assert response_change.status_code == 202
+    assert response_change.json()["seats"] == 10
+
+    response_table_delete = client.delete(f"/table/{restaurant_id}/{table_number}", headers=headers_admin)
+    assert response_table_delete.status_code == 204
+
 ## ? Test validate clients must not create tables
 def test_client_must_not_create_table(client, get_token_admin ,get_token_client):
     '''

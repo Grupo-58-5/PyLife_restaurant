@@ -105,6 +105,48 @@ def test_client_must_not_add_menu(client, get_token_client, get_token_admin):
     response_menu = client.post(f"/menu/{restaurant_id}", json=body_menu, headers=headers_client)
     assert response_menu.status_code == 403
 
+def test_update_and_delete_menu(client, get_token_admin):
+    '''
+    Test de Menú:
+        ◦ Asegurar que un adminstrador pueda actualizar y eliminar un menú de un restaurante.
+    '''
+    headers_admin = {"Authorization": f"Bearer {get_token_admin}"}
+    body_restaurant = {
+        "name": "client test menu",
+        "address":"Caracas - Las Mercedes",
+        "opening_hour": "12:00:00",
+        "closing_hour":"22:00:00",
+    }
+    response_restaurant = client.post("/restaurants",json=body_restaurant, headers=headers_admin)
+    assert response_restaurant.status_code == 201
+    data_restaurant = response_restaurant.json()
+    restaurant_id = data_restaurant["id"]
+
+    body_menu = {
+        "name": "Menu Test",
+        "description": "Test Menu Description",
+        "category": "Entrada"
+    }
+    response_menu = client.post(f"/menu/{restaurant_id}",json=body_menu, headers=headers_admin)
+    assert response_menu.status_code == 201
+    data_menu = response_menu.json()
+    menu_id = data_menu["item"]["id"]
+
+    body_menu_update = {
+        "name": "Updated Menu",
+        "description": "Updated Description",
+        "category": "Main Course"
+    }
+    response_menu_update = client.put(f"/menu/{restaurant_id}/menu/{menu_id}",json=body_menu_update, headers=headers_admin)
+    response_menu_update_json = response_menu_update.json()
+    print("JSON de respuesta:", response_menu_update_json)
+    assert response_menu_update.status_code == 202
+
+    param = {"menu_id": menu_id}
+
+    response_menu_delete = client.delete(f"/menu/{restaurant_id}", params=param,headers=headers_admin)
+    assert response_menu_delete.status_code == 204
+
 def test_client_must_not_update_nor_delete_menu(client, get_token_client, get_token_admin):
     '''
     Test de Menú:

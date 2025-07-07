@@ -1,3 +1,4 @@
+from uuid import UUID
 from sqlmodel import Session, select
 from sqlmodel.ext.asyncio.session import AsyncSession
 from fastapi import HTTPException
@@ -29,7 +30,7 @@ class UserRepositoryImpl(IUserRepository):
             return Result.failure(e,'Failed insert into User')
 
     async def get_user_by_id(self, id: str) -> Result[User]:
-        query = select(UserModel).where(UserModel.id == id)
+        query = select(UserModel).where(UserModel.id == UUID(id))
         result: Optional[UserModel] = (await self.db.exec(query)).first()
 
         if result is None:
