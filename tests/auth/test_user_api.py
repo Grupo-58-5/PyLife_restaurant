@@ -120,3 +120,25 @@ def test_admin_can_delete_any_profile(client, get_token_admin):
     print("Response: ",response_delete)
     assert response_delete.status_code == 200
 
+def test_admin_can_get_all_users(client, get_token_admin):
+    '''
+    Test de Usuarios:
+        ◦ Asegurar que un administrador pueda obtener todos los usuarios.
+    '''
+    # Se registra un nuevo usuario
+    data = {
+        "name": "Dan",
+        "email": "test5@gmail.com",
+        "password": "Hello"
+    }
+    sign_up = client.post("/auth/sign_up", json=data)
+    assert sign_up.status_code == 201
+
+
+    header_admin = {"Authorization": f"Bearer {get_token_admin}"}
+    response = client.get("/user/get/users", headers=header_admin)
+    print("Response: ", response)
+    assert response.status_code == 200
+    data = response.json()
+
+

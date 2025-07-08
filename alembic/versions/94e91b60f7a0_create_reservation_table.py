@@ -48,4 +48,5 @@ def downgrade() -> None:
     op.drop_index(op.f('ix_reservations_status'), table_name='reservations')
     op.drop_index(op.f('ix_reservations_id'), table_name='reservations')
     op.drop_table('reservations')
+    op.execute("DROP TYPE IF EXISTS reservationstatus")
     # ### end Alembic commands ###
