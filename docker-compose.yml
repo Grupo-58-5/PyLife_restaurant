@@ -34,33 +34,53 @@ services:
       - restaurant-network
 
   # TODO: Uncomment the following section to enable the web service
-  # ? This section is currently commented out to avoid issues with the web service.
-  # web:
-  #   build: .
-  #   command: uvicorn src.main:app --reload --workers 1 --host 0.0.0.0 --port 8000
-  #   restart: always
-  #   container_name: Pylife_backend
-  #   volumes:
-  #     - ./project:/usr/src/app
-  #   ports:
-  #     - ${PORT}:8000
-  #   environment:
-  #     - PORT=${PORT}
-  #     - SECRET_KEY=${SECRET_KEY}
-  #     - ALGORITHM=${ALGORITHM}
-  #     - ACCESS_TOKEN_EXPIRE_MINUTES=${ACCESS_TOKEN_EXPIRE_MINUTES}
-  #     - DB_NAME=${DB_NAME}
-  #     - DB_USERNAME=${DB_USERNAME}
-  #     - DB_PASSWORD=${DB_PASSWORD}
-  #     - DB_HOST=${DB_HOST}
-  #     - DB_PORT=${DB_PORT}
-  #   env_file:
-  #     - ".env"
-  #   depends_on:
-  #     pythondb:
-  #       condition: service_healthy
-  #   networks:
-  #     - restaurant-network
+  web:
+    build: .
+    command: uvicorn src.main:app --reload --workers 1 --host 0.0.0.0 --port 8000
+    ports:
+      - 8080:8000
+    environment:
+      - PORT=${PORT:-8000}
+      - SECRET_KEY=${SECRET_KEY:-your_secret_key}
+      - ALGORITHM=${ALGORITHM:-HS256}
+      - ACCESS_TOKEN_EXPIRE_MINUTES=${ACCESS_TOKEN_EXPIRE_MINUTES:-30}
+      - DB_NAME=${DB_NAME:-Pylife}
+      - DB_USERNAME=${DB_USERNAME:-postgres}
+      - DB_PASSWORD=${DB_PASSWORD:-LOLexito2014}
+      - DB_HOST=pythondb
+      - DB_PORT=${DB_PORT:-5432}
+      - TESTING=${TESTING:-False}
+    env_file:
+      - ".env"
+    depends_on:
+      pythondb:
+        condition: service_healthy
+    networks:
+      - restaurant-network
+    
+  web_test:
+    build: .
+    command: uvicorn src.main:app --reload --workers 1 --host 0.0.0.0 --port 8000
+    ports:
+      - 8082:8000
+    environment:
+      - PORT=${PORT:-8000}
+      - SECRET_KEY=${SECRET_KEY:-your_secret_key}
+      - ALGORITHM=${ALGORITHM:-HS256}
+      - ACCESS_TOKEN_EXPIRE_MINUTES=${ACCESS_TOKEN_EXPIRE_MINUTES:-30}
+      - DB_NAME=${DB_NAME:-Pylife}
+      - DB_USERNAME=${DB_USERNAME:-postgres}
+      - DB_PASSWORD=${DB_PASSWORD:-postgres}
+      - DB_HOST=pythondb
+      - DB_PORT=${DB_PORT:-5432}
+      - TESTING=True
+    env_file:
+      - ".env"
+    depends_on:
+      pythondb:
+        condition: service_healthy
+    networks:
+      - restaurant-network
 
 networks:
   restaurant-network:

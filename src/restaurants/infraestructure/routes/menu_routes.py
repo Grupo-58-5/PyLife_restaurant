@@ -68,8 +68,9 @@ async def create_menu_item(info: Annotated[Result[dict], Depends(auth.decode)], 
     Create a new menu item for a specific restaurant.
     """
     service = CreateMenuItemApplicationService(menu_repo, restaurant_repo)
-    menu.restaurant_id = restaurant_id
-    res = await service.execute(menu)
+    
+    res = await service.execute(restaurant_id=restaurant_id, data=menu)
+    
     if res.is_succes():
         return res.result()
     if res.is_error():

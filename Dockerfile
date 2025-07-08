@@ -1,5 +1,5 @@
 # pull official base image
-FROM python:3.13-alpine
+FROM python:3.13-slim
 
 # set working directory
 WORKDIR /usr/src

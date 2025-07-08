@@ -1,6 +1,29 @@
 
 ## * TESTS for restaurants API Endpoints
 
+## ? Verify admin can create restaurants
+def test_create_restaurant(client, get_token_admin):
+    '''
+    Test de Restaurantes:
+        ◦ Asegurar que un administrador pueda crear un restaurante.
+    '''
+    headers = {"Authorization": f"Bearer {get_token_admin}"}
+    body = {
+        "name": "Restaurant Calidad",
+        "address":"Caracas - Las Mercedes",
+        "opening_hour": "12:00:00",
+        "closing_hour":"22:00:00"
+    }
+    response = client.post("/restaurants",json=body, headers=headers)
+    print("JSON de respuesta:", response.json())
+    assert response.status_code == 201
+    data = response.json()
+    assert data["name"] == "Restaurant Calidad"
+    assert data["address"] == "Caracas - Las Mercedes"
+    assert data["opening_hour"] == "12:00:00"
+    assert data["closing_hour"] == "22:00:00"
+    assert "id" in data
+
 ## ? Verify clients must not create restaurants
 def test_client_must_not_create_restaurant(client, get_token_client):
     '''
@@ -214,3 +237,25 @@ def test_create_restaurant_menu_items_same_name(client, get_token_admin):
     assert response.status_code == 409
     data = response.json()
     assert data["detail"] == "Menu items must not repeat on a restaurant, found: hamburger"
+
+def test_admin_can_get_all_restaurants(client, get_token_admin):
+    '''
+    Test de Restaurantes:
+        ◦ Asegurar que un administrador pueda obtener todos los restaurantes.
+    '''
+
+    body = {
+        "name": "Restaurant Calidad",
+        "address":"Caracas - Las Mercedes",
+        "opening_hour": "12:00:00",
+        "closing_hour":"22:00:00"
+    }
+    headers = {"Authorization": f"Bearer {get_token_admin}"}
+
+    response = client.post("/restaurants",json=body, headers=headers)
+    print("JSON de respuesta:", response.json())
+    assert response.status_code == 201
+
+    response = client.get("/restaurants", headers=headers)
+    print("Response: ", response)
+    assert response.status_code == 200

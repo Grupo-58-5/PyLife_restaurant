@@ -1,4 +1,6 @@
 from uuid import uuid4
+
+from sqlalchemy import UUID
 from src.restaurants.application.schemas.entry.create_menu_item_schema import CreateMenuItemSchema
 from src.restaurants.application.schemas.response.menu_item_response import MenuItem, MenuItemBase, MenuItemResponse
 from src.restaurants.domain.repository.i_menu_repository import IMenuRepository
@@ -17,13 +19,13 @@ class CreateMenuItemApplicationService(IApplicationService[CreateMenuItemSchema,
         self.menu_repository = menu_repository
         self.restaurant_repository = restaurant_repository
 
-    async def execute(self, data: CreateMenuItemSchema) -> Result[MenuItemResponse]:
+    async def execute(self,restaurant_id: UUID, data: CreateMenuItemSchema) -> Result[MenuItemResponse]:
         try:
-            restaurant = await self.restaurant_repository.get_restaurant_by_id(data.restaurant_id)
+            restaurant = await self.restaurant_repository.get_restaurant_by_id(restaurant_id)
             if not restaurant:
                 return Result.failure(
                     error=ValueError("Restaurant not found"),
-                    messg=f"Restaurant with ID {data.restaurant_id} does not exist."
+                    messg=f"Restaurant with ID {restaurant_id} does not exist."
                 )
             
             id_menu = uuid4()
@@ -36,7 +38,7 @@ class CreateMenuItemApplicationService(IApplicationService[CreateMenuItemSchema,
             )
             
             restaurant.add_menu_item(item)
-            saved_item = await self.menu_repository.create_item_menu(item, data.restaurant_id)
+            saved_item = await self.menu_repository.create_item_menu(item, restaurant_id)
             if saved_item.is_error():
                 return Result.failure(
                     error=saved_item.error,
