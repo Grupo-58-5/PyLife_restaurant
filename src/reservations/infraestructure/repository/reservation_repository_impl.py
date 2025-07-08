@@ -1,5 +1,5 @@
-from datetime import datetime
-from typing import List, Optional
+from datetime import date, datetime
+from typing import List, Optional, Tuple
 from uuid import UUID
 from sqlalchemy import desc, func, text
 from sqlmodel.ext.asyncio.session import AsyncSession
@@ -294,3 +294,33 @@ class ReservationRepositoryImpl(IReservationRepository):
         except Exception as e:
             print(f"Error: {str(e)}")
             return Result.failure(e, "Failed to fetch top dishes", 500)
+
+    async def get_reservations_grouped_by_day(self, group:str, start_date: date, end_date: date) -> List[Tuple[str, int]]:
+        try:
+            if group == "day":
+                group_expr = func.date_trunc('day', ReservationModel.start_time)
+            elif group == "week":
+                group_expr = func.to_char(func.date_trunc('week', ReservationModel.start_time), 'YYYY-"W"IW')
+            else:
+                return Result.failure(
+                        ValueError("Invalid group_by value"),
+                        400
+                    )
+
+            group_expr_labeled = group_expr.label("period")
+
+            statement = (
+                select(group_expr_labeled, func.count(ReservationModel.id))
+                .where(
+                    ReservationModel.start_time >= start_date,
+                    ReservationModel.start_time <= end_date
+                )
+                .group_by(group_expr_labeled)
+                .order_by(group_expr_labeled)
+            )
+
+            results = await self.db.exec(statement)
+            return results.all()
+        except Exception as e:
+            return Result.failure(e, "Error grouping reservations", 500)
+
